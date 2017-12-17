@@ -71,4 +71,10 @@ public class UserServiceImpl implements UserService {
             throw new MmallException(ResultEnum.PARAM_ERROR);
         }
     }
+
+    @Override
+    public User user_info(String username) {
+        User user=  repository.findByUsername(username);
+        return user;
+    }
 }

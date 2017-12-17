@@ -27,4 +27,10 @@ public class UserServiceImplTest {
         User user=userService.login("admin","123456");
         log.info("测试结束");
     }
+
+    @Test
+    public void redisTest(){
+        User user=userService.login("admin","123456");
+        log.info("测试结束");
+    }
 }
