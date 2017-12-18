@@ -6,18 +6,19 @@ import com.carson.mmall.dataobject.User;
 import com.carson.mmall.enums.ResultEnum;
 import com.carson.mmall.exception.MmallException;
 import com.carson.mmall.form.UserForm;
+import com.carson.mmall.form.UserUpdateInformationForm;
 import com.carson.mmall.service.impl.UserServiceImpl;
 import com.carson.mmall.utils.ResultVOUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/user", headers = "Accept=application/json")
@@ -32,6 +33,8 @@ public class UserController {
 
         User user = userService.login(username, password);
         session.setAttribute(Const.SESSION_AUTH, user.getUsername());
+        session.setAttribute(Const.SESSION_AUTH_ID, user.getId());
+
         return ResultVOUtil.success(user);
     }
 
@@ -47,6 +50,7 @@ public class UserController {
         }
         User user = userService.register(form);
         session.setAttribute(Const.SESSION_AUTH, user.getUsername());
+        session.setAttribute(Const.SESSION_AUTH_ID, user.getId());
         return ResultVOUtil.success();
     }
 
@@ -100,22 +104,21 @@ public class UserController {
     }
 
     @PostMapping(value = "/update_information.do")
-    public ResultVO update_information(@RequestBody Map<String, Object> reqMap, HttpSession session) {
+    public ResultVO update_information(@Valid UserUpdateInformationForm form, BindingResult bindingResult, HttpSession session) {
+        if (bindingResult.hasErrors()) {
+            throw new MmallException(ResultEnum.PARAM_ERROR.getCode(), bindingResult.getFieldError().getDefaultMessage());
+        }
 
         String username = (String) session.getAttribute(Const.SESSION_AUTH);
-        reqMap.put("username", username);
-        User user = userService.update_information(reqMap);
+        form.setUsername(username);
+        User user = userService.update_information(form);
         return ResultVOUtil.success();
     }
-    @PostMapping (value = "/update_information_test.do")
-    public ResultVO update_information_test(@RequestBody Map<String, String> reqMap) {
-        log.info("req={}",reqMap);
-        return ResultVOUtil.success();
-    }
+
 
     @PostMapping("/get_information.do")
     public ResultVO get_information(HttpSession session) {
-        String username = (String) session.getAttribute("username");
+        String username = (String) session.getAttribute(Const.SESSION_AUTH);
         User user = userService.information(username);
         return ResultVOUtil.success(user);
     }
@@ -123,6 +126,7 @@ public class UserController {
     @PostMapping("/logout.do")
     public ResultVO logout(HttpSession session) {
         session.removeAttribute(Const.SESSION_AUTH);
+        session.removeAttribute(Const.SESSION_AUTH_ID);
         return ResultVOUtil.success();
     }
 

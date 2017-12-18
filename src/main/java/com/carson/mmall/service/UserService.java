@@ -2,8 +2,7 @@ package com.carson.mmall.service;
 
 import com.carson.mmall.dataobject.User;
 import com.carson.mmall.form.UserForm;
-
-import java.util.Map;
+import com.carson.mmall.form.UserUpdateInformationForm;
 
 public interface UserService {
     User login(String username, String password);
@@ -22,7 +21,7 @@ public interface UserService {
 
     User reset_password(String username, String passwordOld, String passwordNew);
 
-    User update_information(Map<String,Object> reqMap);
+    User update_information(UserUpdateInformationForm user);
 
     User information(String username);
 }

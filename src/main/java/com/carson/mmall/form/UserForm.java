@@ -3,6 +3,7 @@ package com.carson.mmall.form;
 import lombok.Data;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.beans.factory.annotation.Required;
 
 @Data
 public class UserForm {

@@ -6,6 +6,7 @@ import com.carson.mmall.enums.ResultEnum;
 import com.carson.mmall.enums.RoleEnum;
 import com.carson.mmall.exception.MmallException;
 import com.carson.mmall.form.UserForm;
+import com.carson.mmall.form.UserUpdateInformationForm;
 import com.carson.mmall.repository.UserRepository;
 import com.carson.mmall.service.UserService;
 import com.carson.mmall.utils.MD5Util;
@@ -14,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -158,25 +157,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User update_information(Map<String, Object> reqMap) {
-        log.info("reqMap={}",reqMap.toString());
-        String username = (String) reqMap.get("username");
-        String email = (String) reqMap.get("email");
-        String phone = (String) reqMap.get("phone");
-        String question = (String) reqMap.get("question");
-        String answer = (String) reqMap.get("answer");
-        if (username.isEmpty()) {
+    public User update_information(UserUpdateInformationForm form) {
+
+        if (form.getUsername()==null || form.getUsername().isEmpty()) {
             throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
         }
 
-        User user = repository.findByUsername(username);
+        User user = repository.findByUsername(form.getUsername());
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
         }
-        user.setEmail(email);
-        user.setPhone(phone);
-        user.setQuestion(question);
-        user.setAnswer(answer);
+        user.setEmail(form.getEmail());
+        user.setPhone(form.getPhone());
+        user.setQuestion(form.getQuestion());
+        user.setAnswer(form.getAnswer());
         return repository.save(user);
     }
 
