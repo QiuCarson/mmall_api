@@ -11,14 +11,22 @@ import com.carson.mmall.service.UserService;
 import com.carson.mmall.utils.MD5Util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository repository;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     @Override
     public User login(String username, String password) {
@@ -41,13 +49,13 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User register(UserForm userForm) {
         //检查用户是否存在
-        User userInfo=repository.findByUsername(userForm.getUsername());
-        if(userInfo != null){
+        User userInfo = repository.findByUsername(userForm.getUsername());
+        if (userInfo != null) {
             throw new MmallException(ResultEnum.USERNAME_EXISTS);
         }
         //密码MD5
-        String password=MD5Util.encode(userForm.getPassword());
-        User user=new User();
+        String password = MD5Util.encode(userForm.getPassword());
+        User user = new User();
         user.setUsername(userForm.getUsername());
         user.setPassword(password);
         user.setEmail(userForm.getEmail());
@@ -62,19 +70,126 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void check_username(String str, String type) {
-        if(type.equals(Const.EMAIL)){
-          User user=  repository.findByUsername(str);
+        if (type.equals(Const.EMAIL)) {
+            User user = repository.findByUsername(str);
 
-        }else if(type.equals(Const.USERNAME)){
+        } else if (type.equals(Const.USERNAME)) {
 
-        }else{
+        } else {
             throw new MmallException(ResultEnum.PARAM_ERROR);
         }
     }
 
     @Override
     public User user_info(String username) {
-        User user=  repository.findByUsername(username);
+        User user = repository.findByUsername(username);
+        if (user == null) {
+           // throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
+        }
+        user.setPassword(null);
+        user.setQuestion(null);
+        user.setAnswer(null);
+        return user;
+    }
+
+    @Override
+    public String forget_get_question(String username) {
+        User user = repository.findByUsername(username);
+        if (user == null) {
+            throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
+        }
+        if (user.getQuestion().isEmpty()) {
+            throw new MmallException(ResultEnum.USERNAME_NOT_QUESTION);
+        }
+        return user.getQuestion();
+    }
+
+    @Override
+    public String forget_check_answer(String username, String question, String answer) {
+        User user = repository.findByUsername(username);
+        if (user == null) {
+            throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
+        }
+        if (!user.getQuestion().equals(question)) {
+            throw new MmallException(ResultEnum.QUESTION_ERROR);
+        }
+        if (!user.getAnswer().equals(answer)) {
+            throw new MmallException(ResultEnum.ANSWER_ERROR);
+        }
+        String token = UUID.randomUUID().toString();
+        redisTemplate.opsForValue().set("token" + user.getUsername(), token, 5 * 60, TimeUnit.SECONDS);
+        return token;
+    }
+
+    @Override
+    @Transactional
+    public User forget_reset_password(String username, String passwordNew, String forgetToken) {
+        String redisToken = redisTemplate.opsForValue().get("token" + username);
+        if (redisToken == null || !redisToken.equals(forgetToken)) {
+            throw new MmallException(ResultEnum.TOKEN_ERROR);
+        }
+        User user = repository.findByUsername(username);
+        if (user == null) {
+            throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
+        }
+        String password = MD5Util.encode(passwordNew);
+        user.setPassword(password);
+        return repository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public User reset_password(String username, String passwordOld, String passwordNew) {
+        if (username.isEmpty()) {
+            throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
+        }
+        User user = repository.findByUsername(username);
+        if (user == null) {
+            throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
+        }
+        String password = MD5Util.encode(passwordOld);
+        if (!user.getPassword().equals(password)) {
+            throw new MmallException(ResultEnum.OLD_PASSWORD_ERROR);
+        }
+        String password2 = MD5Util.encode(passwordNew);
+        user.setPassword(password2);
+        return repository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public User update_information(Map<String, Object> reqMap) {
+        log.info("reqMap={}",reqMap.toString());
+        String username = (String) reqMap.get("username");
+        String email = (String) reqMap.get("email");
+        String phone = (String) reqMap.get("phone");
+        String question = (String) reqMap.get("question");
+        String answer = (String) reqMap.get("answer");
+        if (username.isEmpty()) {
+            throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
+        }
+
+        User user = repository.findByUsername(username);
+        if (user == null) {
+            throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
+        }
+        user.setEmail(email);
+        user.setPhone(phone);
+        user.setQuestion(question);
+        user.setAnswer(answer);
+        return repository.save(user);
+    }
+
+    @Override
+    public User information(String username) {
+        if (username.isEmpty()) {
+            throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
+        }
+        User user = repository.findByUsername(username);
+        if (user == null) {
+            throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
+        }
+        user.setPassword(null);
         return user;
     }
 }

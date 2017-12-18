@@ -3,8 +3,9 @@ spring:
     table-prefix: mmall
   datasource:
     username: root
-    password: root
-    url: jdbc:mysql://127.0.0.1/mmall?characterEncoding=utf-8&useSSL=false
+    password: 123456
+    url: jdbc:mysql://127.0.0.1:3307/mmall?characterEncoding=utf-8&useSSL=false
+
   jpa:
     show-sql: true
   redis:
