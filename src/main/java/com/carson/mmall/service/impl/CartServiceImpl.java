@@ -104,6 +104,10 @@ public class CartServiceImpl implements CartService {
             quantity = 0;
         }
         Cart cart = cartRepository.findTopByUserIdAndProductId(userId, productId);
+        if(cart==null){
+            cart =new Cart();
+        }
+        log.info("cart={}",cart);
         cart.setQuantity(quantity);
         cart.setChecked(CartCheckedEnum.YES.getCode());
         cart.setProductId(productId);

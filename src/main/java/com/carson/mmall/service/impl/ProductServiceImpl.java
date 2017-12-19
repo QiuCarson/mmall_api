@@ -4,6 +4,8 @@ import com.carson.mmall.VO.ProductListVO;
 import com.carson.mmall.VO.ProductVO;
 import com.carson.mmall.converter.Product2ProductListVO;
 import com.carson.mmall.dataobject.Product;
+import com.carson.mmall.enums.ResultEnum;
+import com.carson.mmall.exception.MmallException;
 import com.carson.mmall.repository.ProductRepository;
 import com.carson.mmall.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
@@ -64,5 +66,15 @@ public class ProductServiceImpl implements ProductService {
         productVO.setOrderBy(orderBy);
 
         return productVO;
+    }
+
+    @Override
+    public Product detail(Integer productId) {
+        Product product= productRepository.findOne(productId);
+        if(product==null){
+            throw new MmallException(ResultEnum.PRODUCT_NOT_EXISTS);
+        }
+
+        return product;
     }
 }

@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
     public User user_info(String username) {
         User user = repository.findByUsername(username);
         if (user == null) {
-           // throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
+            // throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
         }
         user.setPassword(null);
         user.setQuestion(null);
@@ -159,7 +159,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User update_information(UserUpdateInformationForm form) {
 
-        if (form.getUsername()==null || form.getUsername().isEmpty()) {
+        if (form.getUsername() == null || form.getUsername().isEmpty()) {
             throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
         }
 
@@ -176,7 +176,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User information(String username) {
-        if (username.isEmpty()) {
+        if (username == null || username.isEmpty()) {
             throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
         }
         User user = repository.findByUsername(username);

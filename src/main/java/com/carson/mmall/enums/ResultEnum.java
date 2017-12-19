@@ -23,7 +23,9 @@ public enum ResultEnum {
     LONGIN_NOT_AUTH(110, "用户没有登录"),
 
 
-    PRODUCT_NOT_EXISTS(200,"商品不存在")
+    PRODUCT_NOT_EXISTS(200,"商品不存在"),
+
+    SHIPPING_NOT_EXISTS(300,"地址不存在")
 
     ;
 
