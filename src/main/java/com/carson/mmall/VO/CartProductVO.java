@@ -10,6 +10,8 @@ public class CartProductVO {
 
     private Integer userId;
 
+    private Integer productId;
+
     private Integer quantity;
 
     private String productName;

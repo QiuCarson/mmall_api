@@ -65,7 +65,7 @@ public class UserController {
     public ResultVO user_info(HttpSession session) {
         String username = (String) session.getAttribute(Const.SESSION_AUTH);
         if (username == null) {
-            return ResultVOUtil.error(ResultEnum.USERNAME_NOT_AUTH);
+            return ResultVOUtil.error(ResultEnum.LONGIN_NOT_AUTH);
         }
 
         User user = userService.user_info(username);

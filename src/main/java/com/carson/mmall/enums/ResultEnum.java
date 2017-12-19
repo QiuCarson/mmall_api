@@ -19,7 +19,16 @@ public enum ResultEnum {
     ANSWER_ERROR(106, "问题答案错误"),
     TOKEN_ERROR(107, "token已经失效"),
     OLD_PASSWORD_ERROR(108, "旧密码输入错误"),
-    LOGOUT_ERROR(109, "登出失败");
+    LOGOUT_ERROR(109, "登出失败"),
+    LONGIN_NOT_AUTH(110, "用户没有登录"),
+
+
+    PRODUCT_NOT_EXISTS(200,"商品不存在")
+
+    ;
+
+
+
     private Integer code;
 
     private String message;
