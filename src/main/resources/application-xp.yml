@@ -15,8 +15,3 @@ spring:
   session:
     store-type: redis
 
-custom:
-  imagehost:http://img.happymmall.com/
-
-UserPasswordSalt:
-  mmall

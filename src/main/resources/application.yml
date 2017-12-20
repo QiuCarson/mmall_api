@@ -1,3 +1,6 @@
 spring:
   profiles:
     active: mac
+custom:
+  imageHost: http://img.happymmall.com/
+  UserPasswordSalt: mmall

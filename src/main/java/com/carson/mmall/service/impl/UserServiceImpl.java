@@ -1,6 +1,7 @@
 package com.carson.mmall.service.impl;
 
 import com.carson.mmall.common.Const;
+import com.carson.mmall.config.CustomConfig;
 import com.carson.mmall.dataobject.User;
 import com.carson.mmall.enums.ResultEnum;
 import com.carson.mmall.enums.RoleEnum;
@@ -26,6 +27,8 @@ public class UserServiceImpl implements UserService {
     private UserRepository repository;
     @Autowired
     private StringRedisTemplate redisTemplate;
+    @Autowired
+    private CustomConfig customConfig;
 
     @Override
     public User login(String username, String password) {
@@ -35,7 +38,7 @@ public class UserServiceImpl implements UserService {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
         }
 
-        String md5Password = MD5Util.encode(password);
+        String md5Password = getPasswordMD5(password);
 
         if (!user.getPassword().equals(md5Password)) {
             throw new MmallException(ResultEnum.PASSWORD_ERROR);
@@ -52,7 +55,7 @@ public class UserServiceImpl implements UserService {
             throw new MmallException(ResultEnum.USERNAME_EXISTS);
         }
         //密码MD5
-        String password = MD5Util.encode(userForm.getPassword());
+        String password = getPasswordMD5(userForm.getPassword());
         User user = new User();
         user.setUsername(userForm.getUsername());
         user.setPassword(password);
@@ -178,5 +181,10 @@ public class UserServiceImpl implements UserService {
         }
         user.setPassword(null);
         return user;
+    }
+
+    private String getPasswordMD5(String password){
+        String md5Password = MD5Util.encode(password+customConfig.getUserPasswordSalt());
+        return md5Password;
     }
 }

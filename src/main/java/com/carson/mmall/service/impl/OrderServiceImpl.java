@@ -144,10 +144,10 @@ public class OrderServiceImpl implements OrderService {
         }
         log.info("orderItemVOList={}", orderItemVOList);
         OrderCartProductVO orderCartProductVO = new OrderCartProductVO();
-        orderCartProductVO.setImageHost(customConfig.getImagehost());
+        orderCartProductVO.setImageHost(customConfig.getImageHost());
         orderCartProductVO.setOrderItemVOList(orderItemVOList);
         orderCartProductVO.setProductTotalPrice(totalPrice);
-        log.info("customConfig={}", customConfig.getImagehost());
+        log.info("customConfig={}", customConfig.getImageHost());
         return orderCartProductVO;
     }
 

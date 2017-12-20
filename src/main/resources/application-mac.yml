@@ -15,7 +15,3 @@ spring:
   session:
     store-type: redis
 
-
-
-UserPasswordSalt:
-  mmall
