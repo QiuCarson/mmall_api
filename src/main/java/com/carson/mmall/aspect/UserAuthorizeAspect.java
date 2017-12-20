@@ -21,19 +21,25 @@ import javax.servlet.http.HttpSession;
 public class UserAuthorizeAspect {
 
 
-    @Pointcut("execution(public * com.carson.mmall.controller.Cart*.*(..)) " +
+    @Pointcut("execution(public * com.carson.mmall.controller.Cart*.*(..)) && !execution(public * com.carson.mmall.controller.Cart*.count(..)) " +
             "|| execution(public * com.carson.mmall.controller.Order*.*(..)) " +
             "|| execution(public * com.carson.mmall.controller.Shipping*.*(..)) " +
-            "|| execution(public * com.carson.mmall.controller.User*.auth*(..))" )
-    public void verify(){}
+            "|| execution(public * com.carson.mmall.controller.User*.auth*(..))")
+    public void verify() {
+    }
+
+
+
 
     @Before("verify()")
-    public void doVerify(){
+    public void doVerify() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
-        Integer userId=(Integer)request.getSession().getAttribute(Const.SESSION_AUTH_ID);
-        if(userId==null || userId<1){
+        Integer userId = (Integer) request.getSession().getAttribute(Const.SESSION_AUTH_ID);
+        if (userId == null || userId < 1) {
             throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
         }
     }
+
+
 }
