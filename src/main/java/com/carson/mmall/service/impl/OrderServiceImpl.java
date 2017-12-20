@@ -94,6 +94,7 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
         }
+        log.info("orderNo={}",orderNo);
         Order order = new Order();
         order.setOrderNo(orderNo);
         order.setUserId(userId);
@@ -101,6 +102,7 @@ public class OrderServiceImpl implements OrderService {
         order.setPayment(totalPrice);
         order.setPaymentType(1);
         order.setStatus(OrderStatusEnum.NO_PAY.getCode());
+        log.info("order={}",order);
         Order orderCreate=orderRepository.save(order);
         OrderVO orderVO= new Order2OrderVO().convert(orderCreate);
         orderVO.setOrderItemVoList(orderItemVOList);
