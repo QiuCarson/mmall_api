@@ -104,7 +104,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/update_information.do")
-    public ResultVO update_information(@Valid UserUpdateInformationForm form, BindingResult bindingResult, HttpSession session) {
+    public ResultVO authUpdateInformation(@Valid UserUpdateInformationForm form, BindingResult bindingResult, HttpSession session) {
         if (bindingResult.hasErrors()) {
             throw new MmallException(ResultEnum.PARAM_ERROR.getCode(), bindingResult.getFieldError().getDefaultMessage());
         }
@@ -117,7 +117,7 @@ public class UserController {
 
 
     @PostMapping("/get_information.do")
-    public ResultVO get_information(HttpSession session) {
+    public ResultVO authGetInformation(HttpSession session) {
         String username = (String) session.getAttribute(Const.SESSION_AUTH);
         User user = userService.information(username);
         return ResultVOUtil.success(user);

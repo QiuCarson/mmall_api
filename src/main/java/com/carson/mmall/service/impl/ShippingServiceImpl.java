@@ -62,6 +62,6 @@ public class ShippingServiceImpl implements ShippingService {
 
         ShippingVO shippingVO=new ShippingVO();
         shippingVO.setList(shippingPage.getContent());
-        return null;
+        return shippingVO;
     }
 }

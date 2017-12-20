@@ -33,9 +33,7 @@ public class ShippingController {
     public ResultVO add(@Valid ShippingForm shippingForm, BindingResult bindingResult, HttpSession session) {
 
         Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
-        if (userId < 1) {
-            throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
-        }
+
         if (bindingResult.hasErrors()) {
             throw new MmallException(ResultEnum.PARAM_ERROR.getCode(), bindingResult.getFieldError().getDefaultMessage());
         }
@@ -54,9 +52,7 @@ public class ShippingController {
     @GetMapping("/del.do")
     public ResultVO del(@RequestParam("shippingId") Integer shippingId, HttpSession session) {
         Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
-        if (userId < 1) {
-            throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
-        }
+
         shippingService.del(userId, shippingId);
         return ResultVOUtil.success();
     }
@@ -64,9 +60,7 @@ public class ShippingController {
     @GetMapping("/update.do")
     public ResultVO update(@Valid ShippingForm shippingForm, BindingResult bindingResult, HttpSession session) {
         Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
-        if (userId < 1) {
-            throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
-        }
+
         Shipping shipping = ShippingForm2Shipping.convert(shippingForm);
         shipping.setUserId(userId);
 
@@ -77,21 +71,18 @@ public class ShippingController {
     @GetMapping("/select.do")
     public ResultVO select(@RequestParam("shippingId") Integer shippingId, HttpSession session){
         Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
-        if (userId < 1) {
-            throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
-        }
+
         Shipping shipping=shippingService.select(userId,shippingId);
         return ResultVOUtil.success(shipping);
     }
 
     @GetMapping("/list.do")
-    public ResultVO list(@RequestParam("pageNum") Integer pageNum,
-                         @RequestParam("pageSize") Integer pageSize,
+    public ResultVO list(@RequestParam(value = "pageNum", defaultValue = "0") Integer pageNum,
+                         @RequestParam(value = "pageSize",defaultValue = "20") Integer pageSize,
                          HttpSession session){
         Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
-        if (userId < 1) {
-            throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
-        }
+
+
         ShippingVO shippingVO=shippingService.list(userId,pageNum,pageSize);
         return ResultVOUtil.success(shippingVO);
     }

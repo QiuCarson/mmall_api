@@ -11,4 +11,6 @@ public class Const {
     //购物车是否超过库存数量
     public static final String LIMIT_NUM_SUCCESS="LIMIT_NUM_SUCCESS";
     public static final String LIMIT_NUM_FAIL="LIMIT_NUM_FAIL";
+
+
 }

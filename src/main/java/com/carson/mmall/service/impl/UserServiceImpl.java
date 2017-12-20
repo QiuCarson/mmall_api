@@ -33,7 +33,6 @@ public class UserServiceImpl implements UserService {
 
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
-
         }
 
         String md5Password = MD5Util.encode(password);
@@ -159,10 +158,6 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User update_information(UserUpdateInformationForm form) {
 
-        if (form.getUsername() == null || form.getUsername().isEmpty()) {
-            throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
-        }
-
         User user = repository.findByUsername(form.getUsername());
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
@@ -176,9 +171,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User information(String username) {
-        if (username == null || username.isEmpty()) {
-            throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
-        }
+
         User user = repository.findByUsername(username);
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
