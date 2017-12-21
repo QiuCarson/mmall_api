@@ -1,9 +1,6 @@
 package com.carson.mmall.controller;
 
-import com.carson.mmall.VO.OrderCartProductVO;
-import com.carson.mmall.VO.OrderPageVO;
-import com.carson.mmall.VO.OrderVO;
-import com.carson.mmall.VO.ResultVO;
+import com.carson.mmall.VO.*;
 import com.carson.mmall.common.Const;
 import com.carson.mmall.service.OrderService;
 import com.carson.mmall.utils.ResultVOUtil;
@@ -46,5 +43,11 @@ public class OrderController {
         Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
         OrderPageVO orderPageVO = orderService.list(userId, pageSize, pageNum);
         return ResultVOUtil.success(orderPageVO);
+    }
+    @GetMapping("/detail.do")
+    public ResultVO detail(@RequestParam("orderNo") Long orderNo,HttpSession session){
+        Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
+        OrderPageListVO orderPageListVO= orderService.detail(userId,orderNo);
+        return ResultVOUtil.success(orderPageListVO);
     }
 }

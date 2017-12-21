@@ -1,5 +1,6 @@
 package com.carson.mmall.VO;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -39,5 +40,8 @@ public class OrderPageListVO {
     private Integer shippingId;
 
     private String receiverName;
+
+    @JsonProperty("shippingVo")
+    private ShippingVO shippingVO;
 
 }

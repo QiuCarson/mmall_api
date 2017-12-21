@@ -3,6 +3,7 @@ package com.carson.mmall.service.impl;
 import com.carson.mmall.VO.*;
 import com.carson.mmall.config.CustomConfig;
 import com.carson.mmall.converter.Order2OrderVO;
+import com.carson.mmall.converter.OrderItem2OrderItemVO;
 import com.carson.mmall.dataobject.*;
 import com.carson.mmall.enums.*;
 import com.carson.mmall.exception.MmallException;
@@ -207,14 +208,10 @@ public class OrderServiceImpl implements OrderService {
             Shipping shipping = shippingRepository.findTopByIdAndUserId(order.getShippingId(), userId);
             orderPageListVO.setReceiverName(shipping.getReceiverName());
 
-            List<OrderItemVO> orderItemVOList = new ArrayList<OrderItemVO>();
+
             //查询订单商品
             List<OrderItem> orderItemList = orderItemRepository.findByUserIdAndOrderNo(userId, order.getOrderNo());
-            for (OrderItem orderItem : orderItemList) {
-                OrderItemVO orderItemVO = new OrderItemVO();
-                BeanUtils.copyProperties(orderItem, orderItemVO);
-                orderItemVOList.add(orderItemVO);
-            }
+            List<OrderItemVO> orderItemVOList = OrderItem2OrderItemVO.listConvert(orderItemList);
 
             orderPageListVO.setOrderItemVoList(orderItemVOList);
             orderPageListVOList.add(orderPageListVO);
@@ -226,6 +223,25 @@ public class OrderServiceImpl implements OrderService {
         return orderPageVO;
     }
 
+    @Override
+    public OrderPageListVO detail(Integer userId, long orderNo) {
+        Order order = orderRepository.findTopByUserIdAndOrderNo(userId, orderNo);
+        if (order == null) {
+            throw new MmallException(ResultEnum.ORDER_NOT_EXISTS);
+        }
+        List<OrderItem> orderItemList = orderItemRepository.findByUserIdAndOrderNo(userId, orderNo);
+        List<OrderItemVO> orderItemVOList = OrderItem2OrderItemVO.listConvert(orderItemList);
+
+        //查询收件人名字
+        Shipping shipping = shippingRepository.findTopByIdAndUserId(order.getShippingId(), userId);
+
+        OrderPageListVO orderPageListVO=new OrderPageListVO();
+        BeanUtils.copyProperties(order,orderPageListVO);
+        orderPageListVO.setImageHost(customConfig.getImageHost());
+        orderPageListVO.setReceiverName(shipping.getReceiverName());
+
+        return orderPageListVO;
+    }
 
     /**
      * 生成订单号
