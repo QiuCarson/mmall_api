@@ -11,7 +11,11 @@ public interface CartService {
 
     CartVO update(Integer userId, Integer productId, Integer quantity);
 
-    CartVO delete(Integer userId, String productIds);
+
+
+    CartVO deleteList(Integer userId, List<Integer> productIdList);
+
+    void deleteOne(Integer userId, Integer productId);
 
     CartVO select(Integer userId, Integer productId);
 

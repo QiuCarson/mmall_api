@@ -24,6 +24,8 @@ public enum ResultEnum {
 
 
     PRODUCT_NOT_EXISTS(200,"商品不存在"),
+    PRODUCT_NOT_IN(201,"商品不在售"),
+    PRODUCT_NOT_STOCK(202,"商品库存不足"),
 
     SHIPPING_NOT_EXISTS(300,"地址不存在"),
     CART_NOT_EXISTS(400,"没有要下单的商品")

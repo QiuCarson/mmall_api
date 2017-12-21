@@ -8,7 +8,7 @@ import java.util.Date;
 
 @Data
 public class OrderItemVO {
-    private Integer orderNo;
+    private Long orderNo;
     private Integer productId;
     private String productName;
     private String productImage;

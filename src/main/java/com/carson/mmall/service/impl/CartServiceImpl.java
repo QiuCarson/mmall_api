@@ -68,9 +68,7 @@ public class CartServiceImpl implements CartService {
                     if (cartProductVO.getQuantity() > product.getStock()) {
                         limitQuantity = Const.LIMIT_NUM_FAIL;
                         //更新购物车个购买数量为0
-                        Cart cart = cartRepository.findOne(cartProductVO.getId());
-                        cart.setQuantity(0);
-                        cartRepository.save(cart);
+                        deleteOne(userId,cartProductVO.getProductId());
                     }
                     cartProductVO.setUserId(userId);
                     cartProductVO.setProductName(product.getName());
@@ -104,10 +102,10 @@ public class CartServiceImpl implements CartService {
             quantity = 0;
         }
         Cart cart = cartRepository.findTopByUserIdAndProductId(userId, productId);
-        if(cart==null){
-            cart =new Cart();
+        if (cart == null) {
+            cart = new Cart();
         }
-        log.info("cart={}",cart);
+        log.info("cart={}", cart);
         cart.setQuantity(quantity);
         cart.setChecked(CartCheckedEnum.YES.getCode());
         cart.setProductId(productId);
@@ -128,15 +126,25 @@ public class CartServiceImpl implements CartService {
         return cartList(userId);
     }
 
+
     @Override
     @Transactional
-    public CartVO delete(Integer userId, String productIds) {
-        String[] productIdArray = productIds.split(",");
-        for (String productId : productIdArray) {
-            Cart cart = cartRepository.findTopByUserIdAndProductId(userId, new Integer(Integer.parseInt(productId)));
-            cartRepository.delete(cart);
+    public CartVO deleteList(Integer userId, List<Integer> productIdList) {
+        for (Integer productId : productIdList) {
+            deleteOne(userId, productId);
         }
         return cartList(userId);
+    }
+
+
+    @Override
+    @Transactional
+    public void deleteOne(Integer userId, Integer productId) {
+        Cart cart = cartRepository.findTopByUserIdAndProductId(userId, productId);
+        if (cart == null) {
+            throw new MmallException(ResultEnum.PRODUCT_NOT_EXISTS);
+        }
+        cartRepository.delete(cart);
     }
 
     @Override
@@ -166,10 +174,10 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public Integer count(Integer userId) {
-        List<Cart> cartList =cartRepository.findByUserId(userId);
-        Integer count=0;
-        for (Cart cart:cartList){
-            count+=cart.getQuantity();
+        List<Cart> cartList = cartRepository.findByUserId(userId);
+        Integer count = 0;
+        for (Cart cart : cartList) {
+            count += cart.getQuantity();
         }
         return count;
     }
@@ -177,8 +185,8 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public CartVO selectAll(Integer userId) {
-        List<Cart> cartList =cartRepository.findByUserId(userId);
-        for(Cart cart:cartList){
+        List<Cart> cartList = cartRepository.findByUserId(userId);
+        for (Cart cart : cartList) {
             cart.setChecked(CartCheckedEnum.YES.getCode());
             cartRepository.save(cart);
         }
@@ -188,8 +196,8 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public CartVO unSelectAll(Integer userId) {
-        List<Cart> cartList =cartRepository.findByUserId(userId);
-        for(Cart cart:cartList){
+        List<Cart> cartList = cartRepository.findByUserId(userId);
+        for (Cart cart : cartList) {
             cart.setChecked(CartCheckedEnum.NO.getCode());
             cartRepository.save(cart);
         }

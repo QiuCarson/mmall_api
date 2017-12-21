@@ -1,21 +1,23 @@
 package com.carson.mmall.service.impl;
 
-import com.carson.mmall.VO.CartProductVO;
-import com.carson.mmall.VO.OrderCartProductVO;
-import com.carson.mmall.VO.OrderItemVO;
-import com.carson.mmall.VO.OrderVO;
+import com.carson.mmall.VO.*;
 import com.carson.mmall.config.CustomConfig;
 import com.carson.mmall.converter.Order2OrderVO;
 import com.carson.mmall.dataobject.*;
-import com.carson.mmall.enums.CartCheckedEnum;
-import com.carson.mmall.enums.OrderStatusEnum;
-import com.carson.mmall.enums.ResultEnum;
+import com.carson.mmall.enums.*;
 import com.carson.mmall.exception.MmallException;
 import com.carson.mmall.repository.*;
+import com.carson.mmall.service.CartService;
 import com.carson.mmall.service.OrderService;
+import com.carson.mmall.service.ProductService;
+import com.carson.mmall.utils.EnumHelperUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +44,12 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private CustomConfig customConfig;
 
+    @Autowired
+    private ProductService productService;
+
+    @Autowired
+    private CartService cartService;
+
     @Override
     @Transactional
     public OrderVO create(Integer userId, Integer shippingId) {
@@ -63,16 +71,25 @@ public class OrderServiceImpl implements OrderService {
 
         List<OrderItemVO> orderItemVOList = new ArrayList<>();
 
+        //订单的总价
         BigDecimal totalPrice = new BigDecimal(0);
+
+
         //查询所有购物车商品 产品表详细信息
         List<Product> productList = productRepository.findByIdIn(productIdList);
         for (Product product : productList) {
             for (Cart cart : cartList) {
                 if (product.getId().equals(cart.getProductId())) {
+                    //检查商品状态
+                    if (!product.getStatus().equals(ProductStatusEnum.IN.getCode())) {
+                        throw new MmallException(ResultEnum.PRODUCT_NOT_IN);
+                    }
+                    //检查商品库存状态
+                    if (product.getStock() < cart.getQuantity()) {
+                        throw new MmallException(ResultEnum.PRODUCT_NOT_STOCK);
+                    }
 
-                    //TODO检查商品库存状态
-                    //TODO检查商品状态
-                    
+                    //创建订单子项
                     OrderItem orderItem = new OrderItem();
                     orderItem.setUserId(userId);
                     orderItem.setOrderNo(orderNo);
@@ -84,28 +101,37 @@ public class OrderServiceImpl implements OrderService {
                     //计算单个商品的总价
                     BigDecimal oneTotalPrice = product.getPrice().multiply(new BigDecimal(cart.getQuantity()));
                     orderItem.setTotalPrice(oneTotalPrice);
-                    orderItemRepository.save(orderItem);
+                    OrderItem orderItemInfo = orderItemRepository.save(orderItem);
 
-                    OrderItemVO orderItemVO=new OrderItemVO();
-                    BeanUtils.copyProperties(orderItemVO, orderItem);
+                    OrderItemVO orderItemVO = new OrderItemVO();
+                    BeanUtils.copyProperties(orderItemInfo, orderItemVO);
                     orderItemVOList.add(orderItemVO);
                     //全部商品总价
                     totalPrice = totalPrice.add(oneTotalPrice);
                 }
             }
         }
-        log.info("orderNo={}",orderNo);
+        //创建订单
         Order order = new Order();
         order.setOrderNo(orderNo);
         order.setUserId(userId);
         order.setShippingId(shippingId);
-        order.setPayment(totalPrice);
         order.setPaymentType(1);
+        order.setPostage(0);
+        order.setPayment(totalPrice);
         order.setStatus(OrderStatusEnum.NO_PAY.getCode());
-        log.info("order={}",order);
-        Order orderCreate=orderRepository.save(order);
-        OrderVO orderVO= new Order2OrderVO().convert(orderCreate);
+
+        Order orderCreate = orderRepository.save(order);
+        OrderVO orderVO = new Order2OrderVO().convert(orderCreate);
         orderVO.setOrderItemVoList(orderItemVOList);
+
+        //减库存
+        productService.decreaseStock(cartList);
+
+        //清空购物车购买的商品
+        List<Integer> cartProductIdList = cartList.stream().map(e -> e.getProductId()).collect(Collectors.toList());
+        cartService.deleteList(userId, cartProductIdList);
+
         return orderVO;
     }
 
@@ -144,15 +170,69 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
         }
-        log.info("orderItemVOList={}", orderItemVOList);
         OrderCartProductVO orderCartProductVO = new OrderCartProductVO();
         orderCartProductVO.setImageHost(customConfig.getImageHost());
         orderCartProductVO.setOrderItemVOList(orderItemVOList);
         orderCartProductVO.setProductTotalPrice(totalPrice);
-        log.info("customConfig={}", customConfig.getImageHost());
         return orderCartProductVO;
     }
 
+    @Override
+    @Transactional
+    public OrderPageVO list(Integer userId, Integer pageSize, Integer pageNum) {
+
+        //分页从0开始
+        Integer currentPage = pageNum - 1;
+
+        Sort sort = new Sort(Sort.Direction.DESC, "id");
+
+        Pageable pageable = new PageRequest(currentPage, pageSize, sort);
+
+        Page<Order> orderPage = orderRepository.findByUserId(userId, pageable);
+
+        List<OrderPageListVO> orderPageListVOList = new ArrayList<OrderPageListVO>();
+        for (Order order : orderPage) {
+            OrderPageListVO orderPageListVO = new OrderPageListVO();
+            BeanUtils.copyProperties(order, orderPageListVO);
+            orderPageListVO.setImageHost(customConfig.getImageHost());
+            //查询PaymentTypeEnum枚举对象
+            PaymentTypeEnum paymentTypeEnum= EnumHelperUtil.getByIntegerTypeCode(PaymentTypeEnum.class,"getCode",order.getPaymentType());
+
+            orderPageListVO.setPaymentTypeDesc(paymentTypeEnum.getMessage());
+
+            //查询OrderStatusEnum枚举对象
+            OrderStatusEnum orderStatusEnum= EnumHelperUtil.getByIntegerTypeCode(OrderStatusEnum.class,"getCode",order.getStatus());
+            orderPageListVO.setStatusDesc(orderStatusEnum.getMessage());
+
+            //查询收件人名字
+            Shipping shipping=shippingRepository.findTopByIdAndUserId(order.getShippingId(),userId);
+            orderPageListVO.setReceiverName(shipping.getReceiverName());
+
+            List<OrderItemVO> orderItemVOList = new ArrayList<OrderItemVO>();
+            //查询订单商品
+            List<OrderItem> orderItemList = orderItemRepository.findByUserIdAndOrderNo(userId, order.getOrderNo());
+            for (OrderItem orderItem : orderItemList) {
+                OrderItemVO orderItemVO = new OrderItemVO();
+                BeanUtils.copyProperties(orderItem, orderItemVO);
+                orderItemVOList.add(orderItemVO);
+            }
+
+            orderPageListVO.setOrderItemVoList(orderItemVOList);
+            orderPageListVOList.add(orderPageListVO);
+
+        }
+        OrderPageVO orderPageVO = new OrderPageVO();
+        orderPageVO.setList(orderPageListVOList);
+
+        return orderPageVO;
+    }
+
+
+    /**
+     * 生成订单号
+     *
+     * @return
+     */
     private long generateOrderNo() {
         long currentTime = System.currentTimeMillis();
         return currentTime + new Random().nextInt(100);

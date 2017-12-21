@@ -7,7 +7,7 @@ import org.springframework.beans.BeanUtils;
 public class Order2OrderVO {
     public OrderVO convert(Order order) {
         OrderVO orderVO = new OrderVO();
-        BeanUtils.copyProperties(orderVO, order);
+        BeanUtils.copyProperties(order, orderVO);
         return orderVO;
     }
 }
