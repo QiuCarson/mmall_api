@@ -196,16 +196,15 @@ public class OrderServiceImpl implements OrderService {
             BeanUtils.copyProperties(order, orderPageListVO);
             orderPageListVO.setImageHost(customConfig.getImageHost());
             //查询PaymentTypeEnum枚举对象
-            PaymentTypeEnum paymentTypeEnum= EnumHelperUtil.getByIntegerTypeCode(PaymentTypeEnum.class,"getCode",order.getPaymentType());
-
+            PaymentTypeEnum paymentTypeEnum = EnumHelperUtil.getByIntegerTypeCode(PaymentTypeEnum.class, "getCode", order.getPaymentType());
             orderPageListVO.setPaymentTypeDesc(paymentTypeEnum.getMessage());
 
             //查询OrderStatusEnum枚举对象
-            OrderStatusEnum orderStatusEnum= EnumHelperUtil.getByIntegerTypeCode(OrderStatusEnum.class,"getCode",order.getStatus());
+            OrderStatusEnum orderStatusEnum = EnumHelperUtil.getByIntegerTypeCode(OrderStatusEnum.class, "getCode", order.getStatus());
             orderPageListVO.setStatusDesc(orderStatusEnum.getMessage());
 
             //查询收件人名字
-            Shipping shipping=shippingRepository.findTopByIdAndUserId(order.getShippingId(),userId);
+            Shipping shipping = shippingRepository.findTopByIdAndUserId(order.getShippingId(), userId);
             orderPageListVO.setReceiverName(shipping.getReceiverName());
 
             List<OrderItemVO> orderItemVOList = new ArrayList<OrderItemVO>();
