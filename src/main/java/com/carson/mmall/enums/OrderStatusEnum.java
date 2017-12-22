@@ -3,7 +3,7 @@ package com.carson.mmall.enums;
 import lombok.Getter;
 
 @Getter
-public enum OrderStatusEnum {
+public enum OrderStatusEnum implements CodeEnum{
     CACLE(0,"已取消"),
     NO_PAY(10,"未付款"),
     YES_PAY(20,"已付款"),

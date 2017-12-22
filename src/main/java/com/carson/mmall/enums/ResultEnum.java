@@ -21,6 +21,7 @@ public enum ResultEnum {
     OLD_PASSWORD_ERROR(108, "旧密码输入错误"),
     LOGOUT_ERROR(109, "登出失败"),
     LONGIN_NOT_AUTH(110, "用户没有登录"),
+    USERNAME_EMAIL_EXISTS(111,"邮件地址已经存在"),
 
 
     PRODUCT_NOT_EXISTS(200, "商品不存在"),

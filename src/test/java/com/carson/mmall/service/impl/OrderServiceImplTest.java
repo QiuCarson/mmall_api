@@ -1,6 +1,7 @@
 package com.carson.mmall.service.impl;
 
 import com.carson.mmall.enums.PaymentTypeEnum;
+import com.carson.mmall.utils.EnumUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,36 +30,8 @@ public class OrderServiceImplTest {
     public void list(){
 
         //getEnumMessage(PaymentTypeEnum.class,1);
-
-        PaymentTypeEnum result=getByIntegerTypeCode(PaymentTypeEnum.class,"getCode",1);
-        log.info("dd={}",result.getMessage());
+        PaymentTypeEnum paymentTypeEnum= EnumUtil.getByCode(PaymentTypeEnum.class,1);
+        log.info("paymentTypeEnum={}",paymentTypeEnum.getMessage());
     }
 
-
-    public static <T extends Enum<T>> T getByIntegerTypeCode(Class<T> clazz,String getTypeCodeMethodName, Integer typeCode){
-        T result = null;
-        try{
-            T[] arr = clazz.getEnumConstants();
-            Method targetMethod = clazz.getDeclaredMethod(getTypeCodeMethodName);
-            Integer typeCodeVal = null;
-            for(T entity:arr){
-                typeCodeVal = Integer.valueOf(targetMethod.invoke(entity).toString());
-                if(typeCodeVal.equals(typeCode)){
-                    result = entity;
-                    break;
-                }
-            }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
 }

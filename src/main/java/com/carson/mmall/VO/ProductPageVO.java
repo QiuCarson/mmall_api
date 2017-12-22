@@ -1,11 +1,13 @@
 package com.carson.mmall.VO;
 
+import com.carson.mmall.dataobject.Product;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class ProductVO {
+public class ProductPageVO {
     private Integer pageNum;
 
     private Integer pageSize;
@@ -42,5 +44,6 @@ public class ProductVO {
 
     private List<Integer> navigatepageNums;
 
-    private List<ProductListVO> list;
+    @JsonProperty("list")
+    private List<Product> productList;
 }

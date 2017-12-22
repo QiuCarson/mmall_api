@@ -1,9 +1,6 @@
 package com.carson.mmall.service.impl;
 
-import com.carson.mmall.VO.OrderItemVO;
-import com.carson.mmall.VO.ProductListVO;
-import com.carson.mmall.VO.ProductVO;
-import com.carson.mmall.converter.Product2ProductListVO;
+import com.carson.mmall.VO.ProductPageVO;
 import com.carson.mmall.dataobject.Cart;
 import com.carson.mmall.dataobject.Product;
 import com.carson.mmall.enums.ProductStatusEnum;
@@ -19,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -27,7 +25,7 @@ public class ProductServiceImpl implements ProductService {
     private ProductRepository productRepository;
 
     @Override
-    public ProductVO list(Integer categoryId, String keyword, Integer pageNum, Integer pageSize, String orderBy) {
+    public ProductPageVO list(Integer categoryId, String keyword, Integer pageNum, Integer pageSize, String orderBy) {
         //分页从0开始
         Integer currentPage = pageNum - 1;
 
@@ -59,17 +57,32 @@ public class ProductServiceImpl implements ProductService {
         } else {
             productPage = productRepository.findByNameLikeAndStatus(keyword, ProductStatusEnum.IN.getCode(), pageable);
         }
-        ProductVO productVO = new ProductVO();
+
+
+        List<Product> productList = productPage.getContent().stream().map(e -> delProductFile(e)).collect(Collectors.toList());
+
+
+        ProductPageVO productPageVO = new ProductPageVO();
         Integer totalPage = productPage.getTotalPages();
 
-        List<ProductListVO> productListVOList = Product2ProductListVO.listConvert(productPage.getContent());
-        productVO.setList(productListVOList);
-        productVO.setPageNum(pageNum);
-        productVO.setPageSize(pageSize);
-        productVO.setSize(totalPage);
-        productVO.setOrderBy(orderBy);
+        productPageVO.setProductList(productList);
+        productPageVO.setPageNum(pageNum);
+        productPageVO.setPageSize(pageSize);
+        productPageVO.setSize(totalPage);
+        productPageVO.setOrderBy(orderBy);
 
-        return productVO;
+        return productPageVO;
+    }
+
+    /**
+     * 删除商品库存
+     *
+     * @param product
+     * @return
+     */
+    private Product delProductFile(Product product) {
+        product.setStock(0);
+        return product;
     }
 
     @Override

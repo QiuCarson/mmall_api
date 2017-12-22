@@ -17,4 +17,5 @@ public class ShippingForm {
     private String receiverAddress;
 
     private String receiverZip;
+
 }

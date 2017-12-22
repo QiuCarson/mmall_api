@@ -1,11 +1,12 @@
 package com.carson.mmall.service.impl;
 
-import com.carson.mmall.VO.CartProductVO;
 import com.carson.mmall.VO.CartVO;
 import com.carson.mmall.common.Const;
-import com.carson.mmall.converter.Cart2CartProductVO;
+import com.carson.mmall.converter.Cart2CartDTOConvert;
+import com.carson.mmall.converter.CartDTO2CartConvert;
 import com.carson.mmall.dataobject.Cart;
 import com.carson.mmall.dataobject.Product;
+import com.carson.mmall.dto.CartDTO;
 import com.carson.mmall.enums.CartCheckedEnum;
 import com.carson.mmall.enums.ResultEnum;
 import com.carson.mmall.exception.MmallException;
@@ -14,12 +15,13 @@ import com.carson.mmall.repository.ProductRepository;
 import com.carson.mmall.service.CartService;
 import com.carson.mmall.utils.BigDecimalUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,25 +36,25 @@ public class CartServiceImpl implements CartService {
     @Override
     public CartVO cartList(Integer userId) {
         List<Cart> cartList = cartRepository.findByUserId(userId);
+        List<CartDTO> cartDTOList = Cart2CartDTOConvert.listConvert(cartList);
 
-        List<Integer> productIdList = cartList.stream().map(e -> e.getProductId()).collect(Collectors.toList());
-
-        //对象转换
-        List<CartProductVO> cartProductVOList = Cart2CartProductVO.listConvert(cartList);
+        List<Integer> productIdList = cartDTOList.stream().map(e -> e.getProductId()).collect(Collectors.toList());
 
         //查询所有购物车商品 产品表详细信息
         List<Product> productList = productRepository.findByIdIn(productIdList);
 
+        List<CartDTO>  cartDTOListNew=new ArrayList<>();
+
         //商品总价
         BigDecimal prceTotal = new BigDecimal(0);
         Boolean allChecked = true;
-        for (CartProductVO cartProductVO : cartProductVOList) {
+        for (CartDTO cartDTO : cartDTOList) {
             for (Product product : productList) {
-                if (product.getId().equals(cartProductVO.getProductId())) {
+                if (product.getId().equals(cartDTO.getProductId())) {
                     //计算单个商品总价
-                    BigDecimal productPriceTotal = BigDecimalUtil.priceFormat(product.getPrice().multiply(new BigDecimal(cartProductVO.getQuantity())));
+                    BigDecimal productPriceTotal = BigDecimalUtil.priceFormat(product.getPrice().multiply(new BigDecimal(cartDTO.getQuantity())));
                     //如果勾选，就计算到商品总价
-                    if (cartProductVO.getProductChecked() == CartCheckedEnum.YES.getCode()) {
+                    if (cartDTO.getChecked() == CartCheckedEnum.YES.getCode()) {
                         //计算商品总价
                         prceTotal = prceTotal.add(productPriceTotal);
                     } else {
@@ -65,25 +67,22 @@ public class CartServiceImpl implements CartService {
 
                     String limitQuantity = Const.LIMIT_NUM_SUCCESS;
                     //判断购物车数量是否超过库存
-                    if (cartProductVO.getQuantity() > product.getStock()) {
+                    if (cartDTO.getQuantity() > product.getStock()) {
                         limitQuantity = Const.LIMIT_NUM_FAIL;
                         //更新购物车个购买数量为0
-                        deleteOne(userId,cartProductVO.getProductId());
+                        deleteOne(userId, cartDTO.getProductId());
                     }
-                    cartProductVO.setUserId(userId);
-                    cartProductVO.setProductName(product.getName());
-                    cartProductVO.setProductSubtitle(product.getSubtitle());
-                    cartProductVO.setProductMainImage(product.getMainImage());
-                    cartProductVO.setProductPrice(product.getPrice());
-                    cartProductVO.setProductStatus(product.getStatus());
-                    cartProductVO.setProductTotalPrice(productPriceTotal);
-                    cartProductVO.setProductStock(product.getStock());
-                    cartProductVO.setLimitQuantity(limitQuantity);
+                    BeanUtils.copyProperties(product, cartDTO);
+                    cartDTO.setUserId(userId);
+                    cartDTO.setProductTotalPrice(productPriceTotal);
+                    cartDTO.setLimitQuantity(limitQuantity);
+                    cartDTOListNew.add(cartDTO);
                 }
             }
         }
+        log.info("cartDTOListNew={}",cartDTOListNew);
         CartVO cartVO = new CartVO();
-        cartVO.setCartProductVoList(cartProductVOList);
+        cartVO.setCartProductVOList(cartDTOListNew);
         cartVO.setCartTotalPrice(prceTotal);
         cartVO.setAllChecked(allChecked);
 
@@ -105,7 +104,6 @@ public class CartServiceImpl implements CartService {
         if (cart == null) {
             cart = new Cart();
         }
-        log.info("cart={}", cart);
         cart.setQuantity(quantity);
         cart.setChecked(CartCheckedEnum.YES.getCode());
         cart.setProductId(productId);

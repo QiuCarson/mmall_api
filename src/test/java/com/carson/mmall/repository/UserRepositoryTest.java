@@ -29,7 +29,7 @@ public class UserRepositoryTest {
     @Test
     public void findByUsernameTest(){
         String username="123";
-        User user=repository.findByUsername(username);
+        User user=repository.findTopByUsername(username);
         //log.info(user.toString());
     }
 

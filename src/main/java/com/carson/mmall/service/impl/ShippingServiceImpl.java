@@ -6,6 +6,7 @@ import com.carson.mmall.enums.ResultEnum;
 import com.carson.mmall.exception.MmallException;
 import com.carson.mmall.repository.ShippingRepository;
 import com.carson.mmall.service.ShippingService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class ShippingServiceImpl implements ShippingService {
 
     @Autowired
@@ -27,9 +29,9 @@ public class ShippingServiceImpl implements ShippingService {
     }
 
     @Override
-    public void del(Integer userId,Integer shippingId) {
-        Shipping shipping=shippingRepository.findTopByIdAndUserId(userId,shippingId);
-        if(shipping==null){
+    public void del(Integer userId, Integer shippingId) {
+        Shipping shipping = shippingRepository.findTopByIdAndUserId(shippingId, userId);
+        if (shipping == null) {
             throw new MmallException(ResultEnum.SHIPPING_NOT_EXISTS);
         }
         shippingRepository.delete(shipping);
@@ -37,17 +39,18 @@ public class ShippingServiceImpl implements ShippingService {
 
     @Override
     public Shipping update(Shipping shipping) {
-        Shipping shippingOld=shippingRepository.findTopByIdAndUserId(shipping.getId(),shipping.getUserId());
-        if(shippingOld==null){
+
+        Shipping shippingOld = shippingRepository.findTopByIdAndUserId(shipping.getId(), shipping.getUserId());
+        if (shippingOld == null) {
             throw new MmallException(ResultEnum.SHIPPING_NOT_EXISTS);
         }
         return shippingRepository.save(shipping);
     }
 
     @Override
-    public Shipping select(Integer userId,Integer shippingId) {
-        Shipping shipping=shippingRepository.findTopByIdAndUserId(userId,shippingId);
-        if(shipping==null){
+    public Shipping select(Integer userId, Integer shippingId) {
+        Shipping shipping = shippingRepository.findTopByIdAndUserId(shippingId, userId);
+        if (shipping == null) {
             throw new MmallException(ResultEnum.SHIPPING_NOT_EXISTS);
         }
         return shipping;
@@ -55,12 +58,12 @@ public class ShippingServiceImpl implements ShippingService {
     }
 
     @Override
-    public ShippingVO list(Integer userId,Integer pageNum, Integer pageSize) {
+    public ShippingVO list(Integer userId, Integer pageNum, Integer pageSize) {
         Sort sort = new Sort(Sort.Direction.DESC, "id");
         Pageable pageable = new PageRequest(pageNum, pageSize, sort);
-        Page<Shipping> shippingPage=shippingRepository.findByUserId(userId,pageable);
+        Page<Shipping> shippingPage = shippingRepository.findByUserId(userId, pageable);
 
-        ShippingVO shippingVO=new ShippingVO();
+        ShippingVO shippingVO = new ShippingVO();
         shippingVO.setList(shippingPage.getContent());
         return shippingVO;
     }

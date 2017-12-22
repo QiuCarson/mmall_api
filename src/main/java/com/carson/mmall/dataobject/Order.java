@@ -1,5 +1,7 @@
 package com.carson.mmall.dataobject;
 
+import com.carson.mmall.enums.OrderStatusEnum;
+import com.carson.mmall.enums.PaymentTypeEnum;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.DynamicUpdate;
@@ -29,11 +31,11 @@ public class Order {
 
     private BigDecimal payment;
 
-    private Integer paymentType;
+    private Integer paymentType= PaymentTypeEnum.PAY_ONLINE.getCode();
 
     private Integer postage;
 
-    private Integer status;
+    private Integer status= OrderStatusEnum.NO_PAY.getCode();
 
     private Date paymentTime;
 

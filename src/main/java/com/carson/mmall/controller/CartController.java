@@ -26,6 +26,7 @@ public class CartController {
     @GetMapping("/list.do")
     public ResultVO list(HttpSession session) {
         Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
+
         CartVO cartVO = cartService.cartList(userId);
         return ResultVOUtil.success(cartVO);
     }

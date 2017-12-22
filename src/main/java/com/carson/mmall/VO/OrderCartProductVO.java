@@ -1,5 +1,6 @@
 package com.carson.mmall.VO;
 
+import com.carson.mmall.dataobject.OrderItem;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -11,5 +12,5 @@ public class OrderCartProductVO {
     private String imageHost;
     private BigDecimal productTotalPrice;
     @JsonProperty("orderItemVoList")
-    private List<OrderItemVO> orderItemVOList;
+    private List<OrderItem> orderItemList;
 }

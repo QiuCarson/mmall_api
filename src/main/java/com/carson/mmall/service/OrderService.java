@@ -1,16 +1,17 @@
 package com.carson.mmall.service;
 
 import com.carson.mmall.VO.OrderCartProductVO;
-import com.carson.mmall.VO.OrderPageListVO;
 import com.carson.mmall.VO.OrderPageVO;
-import com.carson.mmall.VO.OrderVO;
+import com.carson.mmall.dto.OrderDTO;
 
 public interface OrderService {
-    OrderVO create(Integer userId, Integer shippingId);
+    OrderDTO create(Integer userId, Integer shippingId);
 
     OrderCartProductVO orderCartProduct(Integer userId);
 
     OrderPageVO list(Integer userId, Integer pageSize, Integer pageNum);
 
-    OrderPageListVO detail(Integer userId, long orderNo);
+    OrderDTO detail(Integer userId, long orderNo);
+
+    OrderDTO cancel(Integer userId, long orderNo);
 }

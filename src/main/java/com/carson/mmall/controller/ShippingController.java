@@ -3,13 +3,14 @@ package com.carson.mmall.controller;
 import com.carson.mmall.VO.ResultVO;
 import com.carson.mmall.VO.ShippingVO;
 import com.carson.mmall.common.Const;
-import com.carson.mmall.converter.ShippingForm2Shipping;
+import com.carson.mmall.converter.ShippingForm2ShippingConvert;
 import com.carson.mmall.dataobject.Shipping;
 import com.carson.mmall.enums.ResultEnum;
 import com.carson.mmall.exception.MmallException;
 import com.carson.mmall.form.ShippingForm;
 import com.carson.mmall.service.ShippingService;
 import com.carson.mmall.utils.ResultVOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/shipping")
+@Slf4j
 public class ShippingController {
 
     @Autowired
@@ -38,7 +40,7 @@ public class ShippingController {
             throw new MmallException(ResultEnum.PARAM_ERROR.getCode(), bindingResult.getFieldError().getDefaultMessage());
         }
 
-        Shipping shipping = ShippingForm2Shipping.convert(shippingForm);
+        Shipping shipping = ShippingForm2ShippingConvert.convert(shippingForm);
 
         shipping.setUserId(userId);
 
@@ -59,9 +61,13 @@ public class ShippingController {
 
     @GetMapping("/update.do")
     public ResultVO update(@Valid ShippingForm shippingForm, BindingResult bindingResult, HttpSession session) {
+        if (bindingResult.hasErrors()) {
+            throw new MmallException(ResultEnum.PARAM_ERROR.getCode(), bindingResult.getFieldError().getDefaultMessage());
+        }
+
         Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
 
-        Shipping shipping = ShippingForm2Shipping.convert(shippingForm);
+        Shipping shipping = ShippingForm2ShippingConvert.convert(shippingForm);
         shipping.setUserId(userId);
 
         shippingService.update(shipping);
@@ -69,21 +75,21 @@ public class ShippingController {
     }
 
     @GetMapping("/select.do")
-    public ResultVO select(@RequestParam("shippingId") Integer shippingId, HttpSession session){
+    public ResultVO select(@RequestParam("shippingId") Integer shippingId, HttpSession session) {
         Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
 
-        Shipping shipping=shippingService.select(userId,shippingId);
+        Shipping shipping = shippingService.select(userId, shippingId);
         return ResultVOUtil.success(shipping);
     }
 
     @GetMapping("/list.do")
     public ResultVO list(@RequestParam(value = "pageNum", defaultValue = "0") Integer pageNum,
-                         @RequestParam(value = "pageSize",defaultValue = "20") Integer pageSize,
-                         HttpSession session){
+                         @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize,
+                         HttpSession session) {
         Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
 
 
-        ShippingVO shippingVO=shippingService.list(userId,pageNum,pageSize);
+        ShippingVO shippingVO = shippingService.list(userId, pageNum, pageSize);
         return ResultVOUtil.success(shippingVO);
     }
 }

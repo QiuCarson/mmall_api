@@ -2,18 +2,16 @@ package com.carson.mmall.service.impl;
 
 import com.carson.mmall.VO.*;
 import com.carson.mmall.config.CustomConfig;
-import com.carson.mmall.converter.Order2OrderVO;
-import com.carson.mmall.converter.OrderItem2OrderItemVO;
+import com.carson.mmall.converter.Order2OrderDTOConvert;
 import com.carson.mmall.dataobject.*;
+import com.carson.mmall.dto.OrderDTO;
 import com.carson.mmall.enums.*;
 import com.carson.mmall.exception.MmallException;
 import com.carson.mmall.repository.*;
 import com.carson.mmall.service.CartService;
 import com.carson.mmall.service.OrderService;
 import com.carson.mmall.service.ProductService;
-import com.carson.mmall.utils.EnumHelperUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -53,7 +51,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderVO create(Integer userId, Integer shippingId) {
+    public OrderDTO create(Integer userId, Integer shippingId) {
         Shipping shipping = shippingRepository.findTopByIdAndUserId(shippingId, userId);
         if (shipping == null) {
             throw new MmallException(ResultEnum.SHIPPING_NOT_EXISTS);
@@ -70,7 +68,7 @@ public class OrderServiceImpl implements OrderService {
         //生成订单号
         Long orderNo = generateOrderNo();
 
-        List<OrderItemVO> orderItemVOList = new ArrayList<>();
+        List<OrderItem> orderItemList = new ArrayList<>();
 
         //订单的总价
         BigDecimal totalPrice = new BigDecimal(0);
@@ -104,9 +102,7 @@ public class OrderServiceImpl implements OrderService {
                     orderItem.setTotalPrice(oneTotalPrice);
                     OrderItem orderItemInfo = orderItemRepository.save(orderItem);
 
-                    OrderItemVO orderItemVO = new OrderItemVO();
-                    BeanUtils.copyProperties(orderItemInfo, orderItemVO);
-                    orderItemVOList.add(orderItemVO);
+                    orderItemList.add(orderItemInfo);
                     //全部商品总价
                     totalPrice = totalPrice.add(oneTotalPrice);
                 }
@@ -117,14 +113,12 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderNo(orderNo);
         order.setUserId(userId);
         order.setShippingId(shippingId);
-        order.setPaymentType(1);
         order.setPostage(0);
         order.setPayment(totalPrice);
-        order.setStatus(OrderStatusEnum.NO_PAY.getCode());
 
         Order orderCreate = orderRepository.save(order);
-        OrderVO orderVO = new Order2OrderVO().convert(orderCreate);
-        orderVO.setOrderItemVoList(orderItemVOList);
+        OrderDTO orderDTO = Order2OrderDTOConvert.convert(orderCreate);
+        orderDTO.setOrderItemList(orderItemList);
 
         //减库存
         productService.decreaseStock(cartList);
@@ -133,7 +127,7 @@ public class OrderServiceImpl implements OrderService {
         List<Integer> cartProductIdList = cartList.stream().map(e -> e.getProductId()).collect(Collectors.toList());
         cartService.deleteList(userId, cartProductIdList);
 
-        return orderVO;
+        return orderDTO;
     }
 
     @Override
@@ -149,31 +143,31 @@ public class OrderServiceImpl implements OrderService {
         //查询所有购物车商品 产品表详细信息
         List<Product> productList = productRepository.findByIdIn(productIdList);
 
-        List<OrderItemVO> orderItemVOList = new ArrayList<>();
+        List<OrderItem> orderItemList = new ArrayList<>();
         BigDecimal totalPrice = new BigDecimal(0);
         for (Cart cart : cartList) {
             for (Product product : productList) {
                 if (product.getId().equals(cart.getProductId())) {
-                    OrderItemVO orderItemVO = new OrderItemVO();
-                    orderItemVO.setProductId(product.getId());
-                    orderItemVO.setProductName(product.getName());
-                    orderItemVO.setProductImage(product.getMainImage());
-                    orderItemVO.setCurrentUnitPrice(product.getPrice());
-                    orderItemVO.setQuantity(cart.getQuantity());
-                    orderItemVO.setCreateTime(cart.getCreateTime());
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setProductId(product.getId());
+                    orderItem.setProductName(product.getName());
+                    orderItem.setProductImage(product.getMainImage());
+                    orderItem.setCurrentUnitPrice(product.getPrice());
+                    orderItem.setQuantity(cart.getQuantity());
+                    orderItem.setCreateTime(cart.getCreateTime());
                     //单个商品总价
                     BigDecimal oneTotalPrice = product.getPrice().multiply(new BigDecimal(cart.getQuantity()));
-                    orderItemVO.setTotalPrice(oneTotalPrice);
+                    orderItem.setTotalPrice(oneTotalPrice);
                     //全部商品总价
                     totalPrice = totalPrice.add(oneTotalPrice);
 
-                    orderItemVOList.add(orderItemVO);
+                    orderItemList.add(orderItem);
                 }
             }
         }
         OrderCartProductVO orderCartProductVO = new OrderCartProductVO();
         orderCartProductVO.setImageHost(customConfig.getImageHost());
-        orderCartProductVO.setOrderItemVOList(orderItemVOList);
+        orderCartProductVO.setOrderItemList(orderItemList);
         orderCartProductVO.setProductTotalPrice(totalPrice);
         return orderCartProductVO;
     }
@@ -190,57 +184,74 @@ public class OrderServiceImpl implements OrderService {
         Pageable pageable = new PageRequest(currentPage, pageSize, sort);
 
         Page<Order> orderPage = orderRepository.findByUserId(userId, pageable);
+        List<OrderDTO> orderDTOList=Order2OrderDTOConvert.listConvert(orderPage.getContent());
 
-        List<OrderPageListVO> orderPageListVOList = new ArrayList<OrderPageListVO>();
-        for (Order order : orderPage) {
-            OrderPageListVO orderPageListVO = new OrderPageListVO();
-            BeanUtils.copyProperties(order, orderPageListVO);
-            orderPageListVO.setImageHost(customConfig.getImageHost());
-            //查询PaymentTypeEnum枚举对象
-            PaymentTypeEnum paymentTypeEnum = EnumHelperUtil.getByIntegerTypeCode(PaymentTypeEnum.class, "getCode", order.getPaymentType());
-            orderPageListVO.setPaymentTypeDesc(paymentTypeEnum.getMessage());
+        List<OrderDTO> orderDTOListNew = new ArrayList<OrderDTO>();
 
-            //查询OrderStatusEnum枚举对象
-            OrderStatusEnum orderStatusEnum = EnumHelperUtil.getByIntegerTypeCode(OrderStatusEnum.class, "getCode", order.getStatus());
-            orderPageListVO.setStatusDesc(orderStatusEnum.getMessage());
+        for (OrderDTO orderDTO : orderDTOList) {
+            //orderDTO数据添加
+            orderDTO=getOrderDTOInfo(orderDTO);
 
-            //查询收件人名字
-            Shipping shipping = shippingRepository.findTopByIdAndUserId(order.getShippingId(), userId);
-            orderPageListVO.setReceiverName(shipping.getReceiverName());
-
-
-            //查询订单商品
-            List<OrderItem> orderItemList = orderItemRepository.findByUserIdAndOrderNo(userId, order.getOrderNo());
-            List<OrderItemVO> orderItemVOList = OrderItem2OrderItemVO.listConvert(orderItemList);
-
-            orderPageListVO.setOrderItemVoList(orderItemVOList);
-            orderPageListVOList.add(orderPageListVO);
+            orderDTOListNew.add(orderDTO);
 
         }
+
         OrderPageVO orderPageVO = new OrderPageVO();
-        orderPageVO.setList(orderPageListVOList);
+        orderPageVO.setList(orderDTOListNew);
 
         return orderPageVO;
     }
 
     @Override
-    public OrderPageListVO detail(Integer userId, long orderNo) {
+    public OrderDTO detail(Integer userId, long orderNo) {
         Order order = orderRepository.findTopByUserIdAndOrderNo(userId, orderNo);
         if (order == null) {
             throw new MmallException(ResultEnum.ORDER_NOT_EXISTS);
         }
-        List<OrderItem> orderItemList = orderItemRepository.findByUserIdAndOrderNo(userId, orderNo);
-        List<OrderItemVO> orderItemVOList = OrderItem2OrderItemVO.listConvert(orderItemList);
+        OrderDTO orderDTO=Order2OrderDTOConvert.convert(order);
+
+        //orderDTO数据添加
+        orderDTO=getOrderDTOInfo(orderDTO);
+
+        return orderDTO;
+    }
+
+    @Override
+    public OrderDTO cancel(Integer userId, long orderNo) {
+        Order order = orderRepository.findTopByUserIdAndOrderNo(userId, orderNo);
+        if (order == null) {
+            throw new MmallException(ResultEnum.ORDER_NOT_EXISTS);
+        }
+        order.setStatus(OrderStatusEnum.CACLE.getCode());
+        orderRepository.save(order);
+        OrderDTO orderDTO=Order2OrderDTOConvert.convert(order);
+        return orderDTO;
+    }
+
+    /**
+     * OrderDTO 数据填充
+     * @param orderDTO
+     * @return
+     */
+    public OrderDTO getOrderDTOInfo(OrderDTO orderDTO){
+        orderDTO.setImageHost(customConfig.getImageHost());
+
+        log.info("orderDTO={}",orderDTO);
+        //查询PaymentTypeEnum枚举对象 支付状态
+        orderDTO.setPaymentTypeDesc(orderDTO.getPaymentTypeEnum().getMessage());
+
+        //查询OrderStatusEnum枚举对象 订单状态
+        orderDTO.setStatusDesc(orderDTO.getOrderStatusEnum().getMessage());
 
         //查询收件人名字
-        Shipping shipping = shippingRepository.findTopByIdAndUserId(order.getShippingId(), userId);
+        Shipping shipping = shippingRepository.findTopByIdAndUserId(orderDTO.getShippingId(), orderDTO.getUserId());
+        orderDTO.setReceiverName(shipping.getReceiverName());
+        orderDTO.setShipping(shipping);
 
-        OrderPageListVO orderPageListVO=new OrderPageListVO();
-        BeanUtils.copyProperties(order,orderPageListVO);
-        orderPageListVO.setImageHost(customConfig.getImageHost());
-        orderPageListVO.setReceiverName(shipping.getReceiverName());
-
-        return orderPageListVO;
+        //查询订单商品
+        List<OrderItem> orderItemList = orderItemRepository.findByUserIdAndOrderNo(orderDTO.getUserId(), orderDTO.getOrderNo());
+        orderDTO.setOrderItemList(orderItemList);
+        return orderDTO;
     }
 
     /**

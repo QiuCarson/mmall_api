@@ -1,5 +1,6 @@
 package com.carson.mmall.VO;
 
+import com.carson.mmall.dto.OrderDTO;
 import lombok.Data;
 
 import java.util.List;
@@ -42,5 +43,5 @@ public class OrderPageVO {
 
     private List<Integer> navigatepageNums;
 
-    private List<OrderPageListVO> list;
+    private List<OrderDTO> list;
 }

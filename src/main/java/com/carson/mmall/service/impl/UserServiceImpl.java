@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User login(String username, String password) {
-        User user = repository.findByUsername(username);
+        User user = repository.findTopByUsername(username);
 
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User register(UserForm userForm) {
         //检查用户是否存在
-        User userInfo = repository.findByUsername(userForm.getUsername());
+        User userInfo = repository.findTopByUsername(userForm.getUsername());
         if (userInfo != null) {
             throw new MmallException(ResultEnum.USERNAME_EXISTS);
         }
@@ -72,10 +72,15 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void check_username(String str, String type) {
         if (type.equals(Const.EMAIL)) {
-            User user = repository.findByUsername(str);
-
+            User user = repository.findTopByEmail(str);
+            if(user!=null){
+                throw new MmallException(ResultEnum.USERNAME_EMAIL_EXISTS);
+            }
         } else if (type.equals(Const.USERNAME)) {
-
+            User user = repository.findTopByUsername(str);
+            if(user!=null){
+                throw new MmallException(ResultEnum.USERNAME_EXISTS);
+            }
         } else {
             throw new MmallException(ResultEnum.PARAM_ERROR);
         }
@@ -83,9 +88,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User user_info(String username) {
-        User user = repository.findByUsername(username);
+        User user = repository.findTopByUsername(username);
         if (user == null) {
-            // throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
+             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
         }
         user.setPassword(null);
         user.setQuestion(null);
@@ -95,7 +100,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String forget_get_question(String username) {
-        User user = repository.findByUsername(username);
+        User user = repository.findTopByUsername(username);
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
         }
@@ -107,7 +112,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String forget_check_answer(String username, String question, String answer) {
-        User user = repository.findByUsername(username);
+        User user = repository.findTopByUsername(username);
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
         }
@@ -129,7 +134,7 @@ public class UserServiceImpl implements UserService {
         if (redisToken == null || !redisToken.equals(forgetToken)) {
             throw new MmallException(ResultEnum.TOKEN_ERROR);
         }
-        User user = repository.findByUsername(username);
+        User user = repository.findTopByUsername(username);
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
         }
@@ -144,7 +149,7 @@ public class UserServiceImpl implements UserService {
         if (username.isEmpty()) {
             throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
         }
-        User user = repository.findByUsername(username);
+        User user = repository.findTopByUsername(username);
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
         }
@@ -161,7 +166,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User update_information(UserUpdateInformationForm form) {
 
-        User user = repository.findByUsername(form.getUsername());
+        User user = repository.findTopByUsername(form.getUsername());
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
         }
@@ -175,7 +180,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User information(String username) {
 
-        User user = repository.findByUsername(username);
+        User user = repository.findTopByUsername(username);
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
         }

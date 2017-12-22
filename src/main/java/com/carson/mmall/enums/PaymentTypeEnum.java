@@ -3,7 +3,7 @@ package com.carson.mmall.enums;
 import lombok.Getter;
 
 @Getter
-public enum PaymentTypeEnum {
+public enum PaymentTypeEnum implements CodeEnum{
     PAY_ONLINE(1, "在线支付");
     private Integer code;
     private String message;
@@ -13,12 +13,5 @@ public enum PaymentTypeEnum {
         this.message = message;
     }
 
-    public static PaymentTypeEnum getPaymentType(int value) {
-        for (PaymentTypeEnum paymentTypeEnum : PaymentTypeEnum.values()) {
-            if (value == paymentTypeEnum.getCode()) {
-                return paymentTypeEnum;
-            }
-        }
-        return null;
-    }
+
 }

@@ -1,7 +1,10 @@
 package com.carson.mmall.controller;
 
-import com.carson.mmall.VO.*;
+import com.carson.mmall.VO.OrderCartProductVO;
+import com.carson.mmall.VO.OrderPageVO;
+import com.carson.mmall.VO.ResultVO;
 import com.carson.mmall.common.Const;
+import com.carson.mmall.dto.OrderDTO;
 import com.carson.mmall.service.OrderService;
 import com.carson.mmall.utils.ResultVOUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +28,8 @@ public class OrderController {
     @GetMapping("/create.do")
     public ResultVO create(@RequestParam("shippingId") Integer shippingId, HttpSession session) {
         Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
-        OrderVO orderVO = orderService.create(userId, shippingId);
-        return ResultVOUtil.success(orderVO);
+        OrderDTO orderDTO = orderService.create(userId, shippingId);
+        return ResultVOUtil.success(orderDTO);
     }
 
     @GetMapping("/get_order_cart_product.do")
@@ -44,10 +47,19 @@ public class OrderController {
         OrderPageVO orderPageVO = orderService.list(userId, pageSize, pageNum);
         return ResultVOUtil.success(orderPageVO);
     }
+
     @GetMapping("/detail.do")
-    public ResultVO detail(@RequestParam("orderNo") Long orderNo,HttpSession session){
+    public ResultVO detail(@RequestParam("orderNo") Long orderNo, HttpSession session) {
         Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
-        OrderPageListVO orderPageListVO= orderService.detail(userId,orderNo);
-        return ResultVOUtil.success(orderPageListVO);
+        OrderDTO orderDTO = orderService.detail(userId, orderNo);
+        return ResultVOUtil.success(orderDTO);
     }
+
+    @GetMapping("/cancel.do")
+    public ResultVO cancel(@RequestParam("orderNo") Long orderNo, HttpSession session) {
+        Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
+        OrderDTO orderDTO = orderService.cancel(userId, orderNo);
+        return ResultVOUtil.success(orderDTO);
+    }
+
 }

@@ -1,5 +1,7 @@
 package com.carson.mmall.VO;
 
+import com.carson.mmall.dto.CartDTO;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -11,5 +13,6 @@ public class CartVO {
 
     private BigDecimal cartTotalPrice;
 
-    private List<CartProductVO> cartProductVoList;
+    @JsonProperty("cartProductVoList")
+    private List<CartDTO> cartProductVOList;
 }
