@@ -26,4 +26,9 @@ public class ProductServiceImplTest {
         String orderBy = "default";
         productService.list(categoryId, keyword, pageNum, pageSize, orderBy);
     }
+
+    @Test
+    public void pageTest(){
+
+    }
 }

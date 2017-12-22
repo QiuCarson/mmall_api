@@ -9,8 +9,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class PageUtil {
-    public static <T extends PageVO> T getPage(Class<T> pageClass, Page<T> page)      {
-        T result=null;
+    public static Object getPage(Class pageClass, Page page)      {
+        Object result=null;
         try {
             //是否有上一页
             Method setHasPreviousPage = pageClass.getDeclaredMethod("setHasPreviousPage", Boolean.class);
