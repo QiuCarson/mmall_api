@@ -8,6 +8,7 @@ import com.carson.mmall.enums.ResultEnum;
 import com.carson.mmall.exception.MmallException;
 import com.carson.mmall.repository.ProductRepository;
 import com.carson.mmall.service.ProductService;
+import com.carson.mmall.utils.PageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -28,7 +29,6 @@ public class ProductServiceImpl implements ProductService {
     public ProductPageVO list(Integer categoryId, String keyword, Integer pageNum, Integer pageSize, String orderBy) {
         //分页从0开始
         Integer currentPage = pageNum - 1;
-
         Sort sort = new Sort(Sort.Direction.DESC, "id");
         String[] orderby = orderBy.split("_");
         String orderByField = "";
@@ -47,6 +47,7 @@ public class ProductServiceImpl implements ProductService {
                 }
             }
         }
+        log.info("pageSize={}",pageSize);
         Pageable pageable = new PageRequest(currentPage, pageSize, sort);
 
         Page<Product> productPage = new PageImpl(new ArrayList<Product>());
@@ -63,13 +64,32 @@ public class ProductServiceImpl implements ProductService {
 
 
         ProductPageVO productPageVO = new ProductPageVO();
-        Integer totalPage = productPage.getTotalPages();
 
         productPageVO.setProductList(productList);
-        productPageVO.setPageNum(pageNum);
-        productPageVO.setPageSize(pageSize);
-        productPageVO.setSize(totalPage);
+
         productPageVO.setOrderBy(orderBy);
+        //分页处理
+        Integer totalPage = productPage.getTotalPages();
+        //是否有上一页
+        productPageVO.setHasPreviousPage(productPage.hasPrevious());
+        //上一页
+        Integer prePage=0;
+        if(productPage.hasPrevious()){
+            prePage=productPage.previousPageable().getPageNumber();
+        }
+        productPageVO.setPrePage(prePage+1);
+        //是否有下一页
+        productPageVO.setHasNextPage(productPage.hasNext());
+        //下一页
+        Integer nextPage=0;
+        if(productPage.hasNext()) {
+            nextPage = productPage.nextPageable().getPageNumber();
+        }
+        productPageVO.setNextPage(nextPage+1);
+        //总的页码数
+        productPageVO.setPages(productPage.getTotalPages());
+        //当期页码
+        productPageVO.setPageNum(productPage.getNumber()+1);
 
         return productPageVO;
     }

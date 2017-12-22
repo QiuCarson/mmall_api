@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class ProductPageVO {
+public class ProductPageVO implements PageVO{
     private Integer pageNum;
 
     private Integer pageSize;
