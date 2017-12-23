@@ -14,4 +14,8 @@ public interface OrderService {
     OrderDTO detail(Integer userId, long orderNo);
 
     OrderDTO cancel(Integer userId, long orderNo);
+
+    String pay(Integer userId, long orderNo);
+
+    Boolean queryOrderPayStatus(Integer userId, long orderNo);
 }

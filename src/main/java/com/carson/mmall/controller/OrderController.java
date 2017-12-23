@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @Slf4j
@@ -62,4 +64,26 @@ public class OrderController {
         return ResultVOUtil.success(orderDTO);
     }
 
+    @GetMapping("/pay.do")
+    public ResultVO pay(@RequestParam("orderNo") Long orderNo,HttpSession session){
+        Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
+        String qrPath = orderService.pay(userId, orderNo);
+        Map<String,String> map=new HashMap<>();
+        map.put("orderNo",String.valueOf(orderNo));
+        map.put("qrPath",qrPath);
+        return ResultVOUtil.success(map);
+    }
+    @GetMapping("/query_order_pay_status.do")
+    public ResultVO queryOrderPayStatus(@RequestParam("orderNo") Long orderNo,HttpSession session){
+        Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
+        Boolean orderPayStatus = orderService.queryOrderPayStatus(userId, orderNo);
+
+        return ResultVOUtil.success(orderPayStatus);
+    }
+
+    @GetMapping("/alipay_callback.do")
+    public ResultVO alipayCallback(){
+        //TODO支付回调处理
+        return null;
+    }
 }

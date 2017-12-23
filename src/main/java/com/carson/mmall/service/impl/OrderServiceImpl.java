@@ -229,6 +229,31 @@ public class OrderServiceImpl implements OrderService {
         return orderDTO;
     }
 
+
+    @Override
+    public String pay(Integer userId, long orderNo) {
+        //这里接入支付宝生成支付二维码
+
+        Order order = orderRepository.findTopByUserIdAndOrderNo(userId, orderNo);
+        if (order == null) {
+            throw new MmallException(ResultEnum.ORDER_NOT_EXISTS);
+        }
+        return null;
+    }
+
+    @Override
+    public Boolean queryOrderPayStatus(Integer userId, long orderNo) {
+        Order order = orderRepository.findTopByUserIdAndOrderNo(userId, orderNo);
+        Boolean orderStatus=false;
+        if (order == null) {
+            throw new MmallException(ResultEnum.ORDER_NOT_EXISTS);
+        }
+        if(order.getStatus()==OrderStatusEnum.YES_PAY.getCode()){
+            orderStatus=true;
+        }
+        return orderStatus;
+    }
+
     /**
      * OrderDTO 数据填充
      * @param orderDTO
