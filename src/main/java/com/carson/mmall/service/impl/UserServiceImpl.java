@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void check_username(String str, String type) {
+    public void checkUsername(String str, String type) {
         if (type.equals(Const.EMAIL)) {
             User user = repository.findTopByEmail(str);
             if(user!=null){
@@ -87,8 +87,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User user_info(String username) {
-        User user = repository.findTopByUsername(username);
+    public User userInfo(Integer userId) {
+        User user = repository.findOne(userId);
         if (user == null) {
              throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
         }
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String forget_get_question(String username) {
+    public String forgetGetQuestion(String username) {
         User user = repository.findTopByUsername(username);
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
@@ -111,7 +111,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String forget_check_answer(String username, String question, String answer) {
+    public String forgetCheckAnswer(String username, String question, String answer) {
         User user = repository.findTopByUsername(username);
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
@@ -129,7 +129,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User forget_reset_password(String username, String passwordNew, String forgetToken) {
+    public User forgetResetPassword(String username, String passwordNew, String forgetToken) {
         String redisToken = redisTemplate.opsForValue().get("token" + username);
         if (redisToken == null || !redisToken.equals(forgetToken)) {
             throw new MmallException(ResultEnum.TOKEN_ERROR);
@@ -145,7 +145,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User reset_password(String username, String passwordOld, String passwordNew) {
+    public User resetPassword(String username, String passwordOld, String passwordNew) {
         if (username.isEmpty()) {
             throw new MmallException(ResultEnum.USERNAME_NOT_AUTH);
         }
@@ -164,9 +164,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User update_information(UserUpdateInformationForm form) {
+    public User updateInformation(UserUpdateInformationForm form) {
 
-        User user = repository.findTopByUsername(form.getUsername());
+        User user = repository.findOne(form.getId());
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
         }
@@ -178,9 +178,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User information(String username) {
+    public User information(Integer userId) {
 
-        User user = repository.findTopByUsername(username);
+        User user = repository.findOne(userId);
         if (user == null) {
             throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
         }

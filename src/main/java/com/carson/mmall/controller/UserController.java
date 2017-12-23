@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,6 +22,7 @@ import javax.validation.Valid;
 
 @RestController
 @Slf4j
+@RequestMapping("/user")
 public class UserController {
 
     @Autowired
@@ -55,25 +57,25 @@ public class UserController {
 
     @PostMapping("/check_valid.do")
     public ResultVO check_username(@RequestParam("str") String str, @RequestParam("type") String type) {
-        userService.check_username(str, type);
+        userService.checkUsername(str, type);
         return ResultVOUtil.success();
     }
 
     @PostMapping("/get_user_info.do")
     public ResultVO user_info(HttpSession session) {
-        String username = (String) session.getAttribute(Const.SESSION_AUTH);
-        if (username == null) {
+        Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
+        if (userId == null) {
             return ResultVOUtil.error(ResultEnum.LONGIN_NOT_AUTH);
         }
 
-        User user = userService.user_info(username);
+        User user = userService.userInfo(userId);
         log.info("username={}", user.toString());
         return ResultVOUtil.success(user);
     }
 
     @PostMapping("/forget_get_question.do")
     public ResultVO forget_get_question(@RequestParam("username") String username) {
-        String question = userService.forget_get_question(username);
+        String question = userService.forgetGetQuestion(username);
         return ResultVOUtil.success(question);
     }
 
@@ -81,7 +83,7 @@ public class UserController {
     public ResultVO forget_check_answer(@RequestParam("username") String username,
                                         @RequestParam("question") String question,
                                         @RequestParam("answer") String answer) {
-        String token = userService.forget_check_answer(username, question, answer);
+        String token = userService.forgetCheckAnswer(username, question, answer);
         return ResultVOUtil.success(token);
     }
 
@@ -89,7 +91,7 @@ public class UserController {
     public ResultVO forget_reset_password(@RequestParam("username") String username,
                                           @RequestParam("passwordNew") String passwordNew,
                                           @RequestParam("forgetToken") String forgetToken) {
-        User user = userService.forget_reset_password(username, passwordNew, forgetToken);
+        User user = userService.forgetResetPassword(username, passwordNew, forgetToken);
         return ResultVOUtil.success();
     }
 
@@ -97,7 +99,7 @@ public class UserController {
     public ResultVO reset_password(@RequestParam("passwordOld") String passwordOld,
                                    @RequestParam("passwordNew") String passwordNew, HttpSession session) {
         String username = session.getAttribute("username").toString();
-        User user = userService.reset_password(username, passwordOld, passwordNew);
+        User user = userService.resetPassword(username, passwordOld, passwordNew);
         return ResultVOUtil.success();
     }
 
@@ -107,17 +109,17 @@ public class UserController {
             throw new MmallException(ResultEnum.PARAM_ERROR.getCode(), bindingResult.getFieldError().getDefaultMessage());
         }
 
-        String username = (String) session.getAttribute(Const.SESSION_AUTH);
-        form.setUsername(username);
-        User user = userService.update_information(form);
+        Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
+        form.setId(userId);
+        User user = userService.updateInformation(form);
         return ResultVOUtil.success();
     }
 
 
     @PostMapping("/get_information.do")
     public ResultVO authGetInformation(HttpSession session) {
-        String username = (String) session.getAttribute(Const.SESSION_AUTH);
-        User user = userService.information(username);
+        Integer userId = (Integer) session.getAttribute(Const.SESSION_AUTH_ID);
+        User user = userService.information(userId);
         return ResultVOUtil.success(user);
     }
 

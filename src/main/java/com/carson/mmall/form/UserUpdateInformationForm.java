@@ -6,6 +6,7 @@ import org.hibernate.validator.constraints.Email;
 @Data
 public class UserUpdateInformationForm {
 
+    private Integer id;
     private String username;
 
     //用户邮件地址

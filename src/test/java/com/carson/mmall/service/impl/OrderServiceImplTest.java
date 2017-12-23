@@ -2,6 +2,7 @@ package com.carson.mmall.service.impl;
 
 import com.carson.mmall.enums.PaymentTypeEnum;
 import com.carson.mmall.utils.EnumUtil;
+import com.carson.mmall.utils.PageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +33,10 @@ public class OrderServiceImplTest {
         //getEnumMessage(PaymentTypeEnum.class,1);
         PaymentTypeEnum paymentTypeEnum= EnumUtil.getByCode(PaymentTypeEnum.class,1);
         log.info("paymentTypeEnum={}",paymentTypeEnum.getMessage());
+    }
+
+    @Test
+    public void pageTest(){
     }
 
 }

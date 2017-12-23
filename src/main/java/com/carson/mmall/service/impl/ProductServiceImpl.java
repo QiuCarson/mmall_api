@@ -47,7 +47,7 @@ public class ProductServiceImpl implements ProductService {
                 }
             }
         }
-        log.info("pageSize={}",pageSize);
+        log.info("pageSize={}", pageSize);
         Pageable pageable = new PageRequest(currentPage, pageSize, sort);
 
         Page<Product> productPage = new PageImpl(new ArrayList<Product>());
@@ -63,13 +63,15 @@ public class ProductServiceImpl implements ProductService {
         List<Product> productList = productPage.getContent().stream().map(e -> delProductFile(e)).collect(Collectors.toList());
 
 
-        ProductPageVO productPageVO = new ProductPageVO();
+        //ProductPageVO productPageVO = new ProductPageVO();
+        ProductPageVO productPageVO = PageUtil.getPage(ProductPageVO.class, productPage);
+        log.info("productPageVO={}", productPageVO);
 
         productPageVO.setProductList(productList);
 
         productPageVO.setOrderBy(orderBy);
         //分页处理
-        Integer totalPage = productPage.getTotalPages();
+        /*Integer totalPage = productPage.getTotalPages();
         //是否有上一页
         productPageVO.setHasPreviousPage(productPage.hasPrevious());
         //上一页
@@ -89,7 +91,7 @@ public class ProductServiceImpl implements ProductService {
         //总的页码数
         productPageVO.setPages(productPage.getTotalPages());
         //当期页码
-        productPageVO.setPageNum(productPage.getNumber()+1);
+        productPageVO.setPageNum(productPage.getNumber()+1);*/
 
         return productPageVO;
     }

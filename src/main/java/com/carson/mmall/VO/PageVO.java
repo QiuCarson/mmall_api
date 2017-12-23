@@ -1,16 +1,18 @@
 package com.carson.mmall.VO;
 
 public interface PageVO {
-    Boolean setHasPreviousPage();
- /*   Boolean setHasPreviousPage(Boolean hasPreviousPage);
 
-    Integer setPrePage(Integer prePage);
 
-    Boolean setHasNextPage(Boolean hasNextPage);
 
-    Integer setNextPage(Integer nextPage);
+    void setHasPreviousPage(Boolean hasPreviousPage);
 
-    Integer setPages(Integer page);
+    void setPrePage(Integer prePage);
 
-    Integer setPageNum(Integer pageNum);*/
+    void setHasNextPage(Boolean hasNextPage);
+
+    void setNextPage(Integer nextPage);
+
+    void setPages(Integer page);
+
+    void setPageNum(Integer pageNum);
 }

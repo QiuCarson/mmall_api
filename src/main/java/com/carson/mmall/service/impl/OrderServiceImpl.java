@@ -11,6 +11,7 @@ import com.carson.mmall.repository.*;
 import com.carson.mmall.service.CartService;
 import com.carson.mmall.service.OrderService;
 import com.carson.mmall.service.ProductService;
+import com.carson.mmall.utils.PageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -196,7 +197,7 @@ public class OrderServiceImpl implements OrderService {
 
         }
 
-        OrderPageVO orderPageVO = new OrderPageVO();
+        OrderPageVO orderPageVO = PageUtil.getPage(OrderPageVO.class,orderPage);
         orderPageVO.setList(orderDTOListNew);
 
         return orderPageVO;

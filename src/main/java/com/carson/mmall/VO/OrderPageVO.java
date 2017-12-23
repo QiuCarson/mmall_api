@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class OrderPageVO {
+public class OrderPageVO implements PageVO{
     private Integer pageNum;
 
     private Integer pageSize;
@@ -44,4 +44,6 @@ public class OrderPageVO {
     private List<Integer> navigatepageNums;
 
     private List<OrderDTO> list;
+
+
 }
