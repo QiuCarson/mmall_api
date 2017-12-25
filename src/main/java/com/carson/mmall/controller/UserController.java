@@ -32,7 +32,6 @@ public class UserController {
     public ResultVO login(@RequestParam("username") String username, @RequestParam("password") String password, HttpSession session) {
 
         User user = userService.login(username, password);
-        session.setAttribute(Const.SESSION_AUTH, user.getUsername());
         session.setAttribute(Const.SESSION_AUTH_ID, user.getId());
 
         return ResultVOUtil.success(user);
@@ -49,7 +48,6 @@ public class UserController {
             throw new MmallException(ResultEnum.PASSWORD_NOT_EQUALS_ERROR);
         }
         User user = userService.register(form);
-        session.setAttribute(Const.SESSION_AUTH, user.getUsername());
         session.setAttribute(Const.SESSION_AUTH_ID, user.getId());
         return ResultVOUtil.success();
     }
@@ -125,7 +123,6 @@ public class UserController {
 
     @PostMapping("/logout.do")
     public ResultVO logout(HttpSession session) {
-        session.removeAttribute(Const.SESSION_AUTH);
         session.removeAttribute(Const.SESSION_AUTH_ID);
         return ResultVOUtil.success();
     }
