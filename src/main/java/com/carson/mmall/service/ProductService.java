@@ -20,5 +20,10 @@ public interface ProductService {
 
     Map<String,String> upload(MultipartFile file);
 
+    Product setSaleStatus(Integer productId,Integer status);
+
+    Product adminSave(Product product);
+
+    Map<String,String> richtextUpload(MultipartFile file);
 
 }

@@ -2,20 +2,20 @@ package com.carson.mmall.controller.admin;
 
 import com.carson.mmall.VO.ProductPageVO;
 import com.carson.mmall.VO.ResultVO;
-import com.carson.mmall.config.CustomConfig;
+import com.carson.mmall.converter.ProductForm2ProductConvert;
 import com.carson.mmall.dataobject.Product;
 import com.carson.mmall.enums.ResultEnum;
 import com.carson.mmall.exception.MmallException;
+import com.carson.mmall.form.ProductForm;
 import com.carson.mmall.service.ProductService;
 import com.carson.mmall.utils.ResultVOUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.util.HashMap;
+import javax.validation.Valid;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/manage/product")
@@ -49,6 +49,32 @@ public class AdminProductController {
     public ResultVO detail(@RequestParam("productId") Integer productId){
         Product product=productService.detail(productId);
         return ResultVOUtil.success(product);
+    }
+
+    @GetMapping("/set_sale_status.do")
+    public ResultVO setSaleStatus(@RequestParam("productId") Integer productId,
+                                  @RequestParam("status") Integer status){
+        Product product=productService.setSaleStatus(productId,status);
+        return ResultVOUtil.success();
+
+    }
+
+    @GetMapping("/save.do")
+    public ResultVO save(@Valid ProductForm productForm, BindingResult bindingResult){
+        if(bindingResult.hasErrors()){
+            throw new MmallException(ResultEnum.PARAM_ERROR.getCode(),bindingResult.getFieldError().getDefaultMessage());
+        }
+        Product product= ProductForm2ProductConvert.convert(productForm);
+        productService.adminSave(product);
+
+        return ResultVOUtil.success();
+    }
+
+
+    @PostMapping("richtext_img_upload.do")
+    public Map<String ,String> richtextImgUpload(@PathVariable("upload_file") MultipartFile upload_file){
+        Map<String ,String> map=productService.richtextUpload(upload_file);
+        return map;
     }
 
 }

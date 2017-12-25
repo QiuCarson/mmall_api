@@ -168,4 +168,47 @@ public class ProductServiceImpl implements ProductService {
         }
         return map;
     }
+
+    @Override
+    public Product setSaleStatus(Integer productId, Integer status) {
+        Product product=productRepository.findOne(productId);
+        if(product==null){
+            throw new MmallException(ResultEnum.PRODUCT_NOT_EXISTS);
+        }
+        product.setStatus(status);
+
+        return productRepository.save(product);
+    }
+
+    @Override
+    public Product adminSave(Product product) {
+        if(product.getId()==null){
+
+        }else{
+           Product productInfo=productRepository.findOne(product.getId());
+           if(productInfo==null){
+               throw new MmallException(ResultEnum.PRODUCT_NOT_EXISTS);
+           }
+
+
+        }
+        return productRepository.save(product);
+    }
+
+    @Override
+    public Map<String, String> richtextUpload(MultipartFile file) {
+        String fileName = uploadUtil.uploadFile(file);
+        log.info("fileName={}",fileName);
+        Map<String, String> map = new HashMap<>();
+        if (fileName != null) {
+            map.put("msg", ResultEnum.PRODUCT_IMAGES_UPLOAD_SUCCESS.getMessage());
+            map.put("file_path", customConfig.getImageHost() + fileName);
+            map.put("success", "true");
+        }else{
+            map.put("msg", ResultEnum.PRODUCT_IMAGES_UPLOAD_ERROR.getMessage());
+            map.put("file_path", "");
+            map.put("success", "false");
+        }
+        return map;
+    }
 }
