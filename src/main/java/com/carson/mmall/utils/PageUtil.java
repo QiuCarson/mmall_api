@@ -30,6 +30,8 @@ public class PageUtil {
             clazz.setNextPage(nextPage + 1);
             //总的页码数
             clazz.setPages(page.getTotalPages());
+            //总共的条数
+            clazz.setTotal(page.getTotalElements());
             //当期页码
             clazz.setPageNum(page.getNumber() + 1);
 

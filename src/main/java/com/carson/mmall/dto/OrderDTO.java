@@ -53,6 +53,7 @@ public class OrderDTO {
 
     private String receiverName;
 
+    @JsonProperty("shippingVo")
     private Shipping shipping;
 
     @JsonIgnore

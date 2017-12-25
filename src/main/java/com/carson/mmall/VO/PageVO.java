@@ -15,4 +15,6 @@ public interface PageVO {
     void setPages(Integer page);
 
     void setPageNum(Integer pageNum);
+
+    void setTotal(Long total);
 }

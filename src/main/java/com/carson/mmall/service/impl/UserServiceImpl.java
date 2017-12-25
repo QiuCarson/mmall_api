@@ -188,8 +188,27 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    @Override
+    public User adminLogin(String username, String password) {
+        User user = repository.findTopByUsername(username);
+
+        if (user == null) {
+            throw new MmallException(ResultEnum.USERNAME_NOT_EXISTS);
+        }
+
+        String md5Password = getPasswordMD5(password);
+
+        if (!user.getPassword().equals(md5Password)) {
+            throw new MmallException(ResultEnum.PASSWORD_ERROR);
+        }
+        if(!user.getRole().equals(RoleEnum.ADMIN.getCode())){
+            throw new MmallException(ResultEnum.USERNAME_ROLE_ERROR);
+        }
+        return user;
+    }
+
     private String getPasswordMD5(String password){
-        String md5Password = MD5Util.encode(password+customConfig.getUserPasswordSalt());
+        String md5Password = MD5Util.encode(password+CustomConfig.UserPasswordSalt);
         return md5Password;
     }
 }

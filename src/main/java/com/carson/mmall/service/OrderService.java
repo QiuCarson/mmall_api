@@ -18,4 +18,12 @@ public interface OrderService {
     String pay(Integer userId, long orderNo);
 
     Boolean queryOrderPayStatus(Integer userId, long orderNo);
+
+    OrderPageVO adminList(Integer pageSize, Integer pageNum);
+
+    OrderPageVO adminSearch(Long orderNo, Integer pageSize, Integer pageNum);
+
+    OrderDTO adminDetail(Long orderNo);
+
+    OrderDTO adminSendGoods(Long orderNo);
 }

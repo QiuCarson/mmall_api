@@ -24,4 +24,6 @@ public interface UserService {
     User updateInformation(UserUpdateInformationForm user);
 
     User information(Integer userId);
+
+    User adminLogin(String username, String password);
 }

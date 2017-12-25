@@ -1,6 +1,7 @@
 package com.carson.mmall.service.impl;
 
 import com.carson.mmall.VO.ProductPageVO;
+import com.carson.mmall.config.CustomConfig;
 import com.carson.mmall.dataobject.Cart;
 import com.carson.mmall.dataobject.Product;
 import com.carson.mmall.enums.ProductStatusEnum;
@@ -9,14 +10,18 @@ import com.carson.mmall.exception.MmallException;
 import com.carson.mmall.repository.ProductRepository;
 import com.carson.mmall.service.ProductService;
 import com.carson.mmall.utils.PageUtil;
+import com.carson.mmall.utils.UploadUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +29,8 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository productRepository;
+
+
 
     @Override
     public ProductPageVO list(Integer categoryId, String keyword, Integer pageNum, Integer pageSize, String orderBy) {
@@ -51,12 +58,14 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = new PageRequest(currentPage, pageSize, sort);
 
         Page<Product> productPage = new PageImpl(new ArrayList<Product>());
-        if (categoryId < 1 && !keyword.isEmpty()) {
+        log.info("keyword={}", keyword);
+        log.info("categoryId={}", categoryId);
+        if ((categoryId != null && categoryId > 0) && (keyword != null && !keyword.isEmpty())) {
             productPage = productRepository.findByCategoryIdAndNameLikeAndStatus(categoryId, keyword, ProductStatusEnum.IN.getCode(), pageable);
-        } else if (categoryId > 0 && (keyword == null || keyword.isEmpty())) {
+        } else if ((categoryId != null && categoryId > 0) && (keyword == null || keyword.isEmpty())) {
             productPage = productRepository.findByCategoryIdAndStatus(categoryId, ProductStatusEnum.IN.getCode(), pageable);
         } else {
-            productPage = productRepository.findByNameLikeAndStatus(keyword, ProductStatusEnum.IN.getCode(), pageable);
+            productPage = productRepository.findByNameLikeAndStatus("%" + keyword + "%", ProductStatusEnum.IN.getCode(), pageable);
         }
 
 
@@ -70,28 +79,6 @@ public class ProductServiceImpl implements ProductService {
         productPageVO.setProductList(productList);
 
         productPageVO.setOrderBy(orderBy);
-        //分页处理
-        /*Integer totalPage = productPage.getTotalPages();
-        //是否有上一页
-        productPageVO.setHasPreviousPage(productPage.hasPrevious());
-        //上一页
-        Integer prePage=0;
-        if(productPage.hasPrevious()){
-            prePage=productPage.previousPageable().getPageNumber();
-        }
-        productPageVO.setPrePage(prePage+1);
-        //是否有下一页
-        productPageVO.setHasNextPage(productPage.hasNext());
-        //下一页
-        Integer nextPage=0;
-        if(productPage.hasNext()) {
-            nextPage = productPage.nextPageable().getPageNumber();
-        }
-        productPageVO.setNextPage(nextPage+1);
-        //总的页码数
-        productPageVO.setPages(productPage.getTotalPages());
-        //当期页码
-        productPageVO.setPageNum(productPage.getNumber()+1);*/
 
         return productPageVO;
     }
@@ -132,5 +119,47 @@ public class ProductServiceImpl implements ProductService {
             product.setStock(stock);
             productRepository.save(product);
         }
+    }
+
+    @Override
+    public ProductPageVO adminList(Integer pageNum, Integer pageSize) {
+        Integer currentPage = pageNum - 1;
+        Sort sort = new Sort(Sort.Direction.DESC, "id");
+        Pageable pageable = new PageRequest(currentPage, pageSize, sort);
+        Page<Product> productPage = productRepository.findAll(pageable);
+
+        ProductPageVO productPageVO = PageUtil.getPage(ProductPageVO.class, productPage);
+        productPageVO.setProductList(productPage.getContent());
+        return productPageVO;
+    }
+
+    @Override
+    public ProductPageVO adminSearch(Integer pageNum, Integer pageSize, String productName, Integer productId) {
+        ProductPageVO productPageVO = new ProductPageVO();
+        if (productId != null) {
+            Product product = productRepository.findOne(productId);
+            List<Product> productList = new ArrayList<>();
+            productList.add(product);
+            productPageVO.setProductList(productList);
+            return productPageVO;
+        }
+        Integer currentPage = pageNum - 1;
+        Sort sort = new Sort(Sort.Direction.DESC, "id");
+        Pageable pageable = new PageRequest(currentPage, pageSize, sort);
+        Page<Product> productPage = productRepository.findByNameContaining(productName,pageable);
+        productPageVO = PageUtil.getPage(ProductPageVO.class, productPage);
+        productPageVO.setProductList(productPage.getContent());
+        return productPageVO;
+    }
+
+    @Override
+    public Map<String, String> upload(MultipartFile file) {
+        String fileName=  UploadUtil.uploadFile(file);
+        Map<String, String> map=new HashMap<>();
+        if(fileName==null){
+            map.put("uri",fileName);
+            map.put("url", CustomConfig.imageHost+fileName);
+        }
+        return null;
     }
 }

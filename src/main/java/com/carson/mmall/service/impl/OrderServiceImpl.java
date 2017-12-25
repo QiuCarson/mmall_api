@@ -1,11 +1,15 @@
 package com.carson.mmall.service.impl;
 
-import com.carson.mmall.VO.*;
+import com.carson.mmall.VO.OrderCartProductVO;
+import com.carson.mmall.VO.OrderPageVO;
 import com.carson.mmall.config.CustomConfig;
 import com.carson.mmall.converter.Order2OrderDTOConvert;
 import com.carson.mmall.dataobject.*;
 import com.carson.mmall.dto.OrderDTO;
-import com.carson.mmall.enums.*;
+import com.carson.mmall.enums.CartCheckedEnum;
+import com.carson.mmall.enums.OrderStatusEnum;
+import com.carson.mmall.enums.ProductStatusEnum;
+import com.carson.mmall.enums.ResultEnum;
 import com.carson.mmall.exception.MmallException;
 import com.carson.mmall.repository.*;
 import com.carson.mmall.service.CartService;
@@ -23,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -41,8 +46,6 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
-    @Autowired
-    private CustomConfig customConfig;
 
     @Autowired
     private ProductService productService;
@@ -167,7 +170,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         OrderCartProductVO orderCartProductVO = new OrderCartProductVO();
-        orderCartProductVO.setImageHost(customConfig.getImageHost());
+        orderCartProductVO.setImageHost(CustomConfig.imageHost);
         orderCartProductVO.setOrderItemList(orderItemList);
         orderCartProductVO.setProductTotalPrice(totalPrice);
         return orderCartProductVO;
@@ -185,19 +188,19 @@ public class OrderServiceImpl implements OrderService {
         Pageable pageable = new PageRequest(currentPage, pageSize, sort);
 
         Page<Order> orderPage = orderRepository.findByUserId(userId, pageable);
-        List<OrderDTO> orderDTOList=Order2OrderDTOConvert.listConvert(orderPage.getContent());
+        List<OrderDTO> orderDTOList = Order2OrderDTOConvert.listConvert(orderPage.getContent());
 
         List<OrderDTO> orderDTOListNew = new ArrayList<OrderDTO>();
 
         for (OrderDTO orderDTO : orderDTOList) {
             //orderDTO数据添加
-            orderDTO=getOrderDTOInfo(orderDTO);
+            orderDTO = getOrderDTOInfo(orderDTO);
 
             orderDTOListNew.add(orderDTO);
 
         }
 
-        OrderPageVO orderPageVO = PageUtil.getPage(OrderPageVO.class,orderPage);
+        OrderPageVO orderPageVO = PageUtil.getPage(OrderPageVO.class, orderPage);
         orderPageVO.setList(orderDTOListNew);
 
         return orderPageVO;
@@ -209,10 +212,10 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new MmallException(ResultEnum.ORDER_NOT_EXISTS);
         }
-        OrderDTO orderDTO=Order2OrderDTOConvert.convert(order);
+        OrderDTO orderDTO = Order2OrderDTOConvert.convert(order);
 
         //orderDTO数据添加
-        orderDTO=getOrderDTOInfo(orderDTO);
+        orderDTO = getOrderDTOInfo(orderDTO);
 
         return orderDTO;
     }
@@ -225,7 +228,7 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setStatus(OrderStatusEnum.CACLE.getCode());
         orderRepository.save(order);
-        OrderDTO orderDTO=Order2OrderDTOConvert.convert(order);
+        OrderDTO orderDTO = Order2OrderDTOConvert.convert(order);
         return orderDTO;
     }
 
@@ -244,25 +247,26 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Boolean queryOrderPayStatus(Integer userId, long orderNo) {
         Order order = orderRepository.findTopByUserIdAndOrderNo(userId, orderNo);
-        Boolean orderStatus=false;
+        Boolean orderStatus = false;
         if (order == null) {
             throw new MmallException(ResultEnum.ORDER_NOT_EXISTS);
         }
-        if(order.getStatus()==OrderStatusEnum.YES_PAY.getCode()){
-            orderStatus=true;
+        if (order.getStatus() == OrderStatusEnum.YES_PAY.getCode()) {
+            orderStatus = true;
         }
         return orderStatus;
     }
 
     /**
      * OrderDTO 数据填充
+     *
      * @param orderDTO
      * @return
      */
-    public OrderDTO getOrderDTOInfo(OrderDTO orderDTO){
-        orderDTO.setImageHost(customConfig.getImageHost());
+    public OrderDTO getOrderDTOInfo(OrderDTO orderDTO) {
+        orderDTO.setImageHost(CustomConfig.imageHost);
 
-        log.info("orderDTO={}",orderDTO);
+        log.info("orderDTO={}", orderDTO);
         //查询PaymentTypeEnum枚举对象 支付状态
         orderDTO.setPaymentTypeDesc(orderDTO.getPaymentTypeEnum().getMessage());
 
@@ -271,12 +275,96 @@ public class OrderServiceImpl implements OrderService {
 
         //查询收件人名字
         Shipping shipping = shippingRepository.findTopByIdAndUserId(orderDTO.getShippingId(), orderDTO.getUserId());
-        orderDTO.setReceiverName(shipping.getReceiverName());
-        orderDTO.setShipping(shipping);
+        if (shipping != null) {
+            orderDTO.setReceiverName(shipping.getReceiverName());
+            orderDTO.setShipping(shipping);
+        }
 
         //查询订单商品
         List<OrderItem> orderItemList = orderItemRepository.findByUserIdAndOrderNo(orderDTO.getUserId(), orderDTO.getOrderNo());
         orderDTO.setOrderItemList(orderItemList);
+        return orderDTO;
+    }
+
+    @Override
+    public OrderPageVO adminList(Integer pageSize, Integer pageNum) {
+        //分页从0开始
+        Integer currentPage = pageNum - 1;
+
+        Sort sort = new Sort(Sort.Direction.DESC, "id");
+
+        Pageable pageable = new PageRequest(currentPage, pageSize, sort);
+
+        Page<Order> orderPage = orderRepository.findAll(pageable);
+        List<OrderDTO> orderDTOList = Order2OrderDTOConvert.listConvert(orderPage.getContent());
+
+        List<OrderDTO> orderDTOListNew = new ArrayList<OrderDTO>();
+
+        for (OrderDTO orderDTO : orderDTOList) {
+            //orderDTO数据添加
+            orderDTO = getOrderDTOInfo(orderDTO);
+
+            orderDTOListNew.add(orderDTO);
+
+        }
+
+        OrderPageVO orderPageVO = PageUtil.getPage(OrderPageVO.class, orderPage);
+        orderPageVO.setList(orderDTOListNew);
+        return orderPageVO;
+    }
+
+    @Override
+    public OrderPageVO adminSearch(Long orderNo, Integer pageSize, Integer pageNum) {
+        //分页从0开始
+        Integer currentPage = pageNum - 1;
+
+        Sort sort = new Sort(Sort.Direction.DESC, "id");
+
+        Pageable pageable = new PageRequest(currentPage, pageSize, sort);
+
+        Page<Order> orderPage = orderRepository.findByOrderNo(orderNo, pageable);
+        List<OrderDTO> orderDTOList = Order2OrderDTOConvert.listConvert(orderPage.getContent());
+
+        List<OrderDTO> orderDTOListNew = new ArrayList<OrderDTO>();
+
+        for (OrderDTO orderDTO : orderDTOList) {
+            //orderDTO数据添加
+            orderDTO = getOrderDTOInfo(orderDTO);
+
+            orderDTOListNew.add(orderDTO);
+
+        }
+
+        OrderPageVO orderPageVO = PageUtil.getPage(OrderPageVO.class, orderPage);
+        orderPageVO.setList(orderDTOListNew);
+        return orderPageVO;
+    }
+
+    @Override
+    public OrderDTO adminDetail(Long orderNo) {
+        Order order = orderRepository.findTopByOrderNo(orderNo);
+        if (order == null) {
+            throw new MmallException(ResultEnum.ORDER_NOT_EXISTS);
+        }
+        OrderDTO orderDTO = Order2OrderDTOConvert.convert(order);
+
+        //orderDTO数据添加
+        orderDTO = getOrderDTOInfo(orderDTO);
+
+        return orderDTO;
+    }
+
+    @Override
+    public OrderDTO adminSendGoods(Long orderNo) {
+        Order order = orderRepository.findTopByOrderNo(orderNo);
+        if (order == null) {
+            throw new MmallException(ResultEnum.ORDER_NOT_EXISTS);
+        }
+        order.setStatus(OrderStatusEnum.SEND.getCode());
+        Date nowTime = new Date(System.currentTimeMillis());
+        order.setSendTime(nowTime);
+        orderRepository.save(order);
+        OrderDTO orderDTO = Order2OrderDTOConvert.convert(order);
         return orderDTO;
     }
 

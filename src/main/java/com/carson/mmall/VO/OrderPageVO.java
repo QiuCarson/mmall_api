@@ -19,7 +19,7 @@ public class OrderPageVO implements PageVO{
 
     private Integer endRow;
 
-    private Integer total;
+    private Long total;
 
     private Integer pages;
 

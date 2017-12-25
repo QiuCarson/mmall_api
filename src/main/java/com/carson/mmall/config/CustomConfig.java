@@ -11,7 +11,15 @@ public class CustomConfig {
     /**
      * 图片的地址
      */
-    private String imageHost;
+    public static String imageHost;
 
-    private String UserPasswordSalt;
+    /**
+     * 加密
+     */
+    public static String UserPasswordSalt;
+
+    /**
+     * 图片保存路径
+     */
+    public  String imageSavePath;
 }

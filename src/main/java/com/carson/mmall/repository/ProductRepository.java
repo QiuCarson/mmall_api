@@ -17,4 +17,5 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     Page<Product> findByNameLikeAndStatus(String keyword, Integer status, Pageable pageable);
 
+    Page<Product> findByNameContaining(String name,Pageable pageable);
 }

@@ -22,16 +22,20 @@ public enum ResultEnum {
     LOGOUT_ERROR(109, "登出失败"),
     LONGIN_NOT_AUTH(110, "用户没有登录"),
     USERNAME_EMAIL_EXISTS(111,"邮件地址已经存在"),
+    USERNAME_ROLE_ERROR(112,"权限不够"),
 
 
     PRODUCT_NOT_EXISTS(200, "商品不存在"),
     PRODUCT_NOT_IN(201, "商品不在售"),
     PRODUCT_NOT_STOCK(202, "商品库存不足"),
+    PRODUCT_IMAGES_NOT_NULL(203,"文件不能为空"),
 
     SHIPPING_NOT_EXISTS(300, "地址不存在"),
     CART_NOT_EXISTS(400, "没有要下单的商品"),
 
-    ORDER_NOT_EXISTS(500, "订单不存在")
+    ORDER_NOT_EXISTS(500, "订单不存在"),
+
+    CATEGORY_NOT_EXISTS(600, "栏目不存在")
     ;
 
 
