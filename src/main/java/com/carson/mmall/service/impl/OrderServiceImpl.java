@@ -49,6 +49,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private ProductService productService;
+    @Autowired
+    private CustomConfig customConfig;
 
     @Autowired
     private CartService cartService;
@@ -170,7 +172,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         OrderCartProductVO orderCartProductVO = new OrderCartProductVO();
-        orderCartProductVO.setImageHost(CustomConfig.imageHost);
+        orderCartProductVO.setImageHost(customConfig.getImageHost());
         orderCartProductVO.setOrderItemList(orderItemList);
         orderCartProductVO.setProductTotalPrice(totalPrice);
         return orderCartProductVO;
@@ -264,7 +266,7 @@ public class OrderServiceImpl implements OrderService {
      * @return
      */
     public OrderDTO getOrderDTOInfo(OrderDTO orderDTO) {
-        orderDTO.setImageHost(CustomConfig.imageHost);
+        orderDTO.setImageHost(customConfig.getImageHost());
 
         log.info("orderDTO={}", orderDTO);
         //查询PaymentTypeEnum枚举对象 支付状态

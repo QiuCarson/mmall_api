@@ -208,7 +208,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private String getPasswordMD5(String password){
-        String md5Password = MD5Util.encode(password+CustomConfig.UserPasswordSalt);
+        String md5Password = MD5Util.encode(password+customConfig.getUserPasswordSalt());
         return md5Password;
     }
 }

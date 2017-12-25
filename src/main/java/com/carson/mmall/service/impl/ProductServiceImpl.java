@@ -30,6 +30,11 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private CustomConfig customConfig;
+
+    @Autowired
+    private UploadUtil uploadUtil;
 
 
     @Override
@@ -146,7 +151,7 @@ public class ProductServiceImpl implements ProductService {
         Integer currentPage = pageNum - 1;
         Sort sort = new Sort(Sort.Direction.DESC, "id");
         Pageable pageable = new PageRequest(currentPage, pageSize, sort);
-        Page<Product> productPage = productRepository.findByNameContaining(productName,pageable);
+        Page<Product> productPage = productRepository.findByNameContaining(productName, pageable);
         productPageVO = PageUtil.getPage(ProductPageVO.class, productPage);
         productPageVO.setProductList(productPage.getContent());
         return productPageVO;
@@ -154,12 +159,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Map<String, String> upload(MultipartFile file) {
-        String fileName=  UploadUtil.uploadFile(file);
-        Map<String, String> map=new HashMap<>();
-        if(fileName==null){
-            map.put("uri",fileName);
-            map.put("url", CustomConfig.imageHost+fileName);
+        String fileName = uploadUtil.uploadFile(file);
+        log.info("fileName={}",fileName);
+        Map<String, String> map = new HashMap<>();
+        if (fileName != null) {
+            map.put("uri", fileName);
+            map.put("url", customConfig.getImageHost() + fileName);
         }
-        return null;
+        return map;
     }
 }

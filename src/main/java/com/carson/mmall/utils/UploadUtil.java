@@ -17,7 +17,7 @@ import java.util.UUID;
 public class UploadUtil {
     @Autowired
     private CustomConfig customConfig;
-    public static String uploadFile(MultipartFile file){
+    public  String uploadFile(MultipartFile file){
         if (file==null ||file.isEmpty()) {
             throw new MmallException(ResultEnum.PRODUCT_IMAGES_NOT_NULL);
         }
@@ -26,7 +26,7 @@ public class UploadUtil {
         // 获取文件的后缀名
         String suffixName = fileName.substring(fileName.lastIndexOf("."));
         // 文件上传后的路径
-        String filePath = "";
+        String filePath = customConfig.getImageSavePath();
         // 解决中文问题，liunx下中文路径，图片显示问题
         fileName = UUID.randomUUID() + suffixName;
         log.info("fileName={}",filePath+fileName);
