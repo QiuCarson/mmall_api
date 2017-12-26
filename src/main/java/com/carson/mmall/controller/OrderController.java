@@ -82,7 +82,7 @@ public class OrderController {
         return ResultVOUtil.success(orderPayStatus);
     }
 
-    @GetMapping("/alipay_callback.do")
+    @RequestMapping("/alipay_callback.do")
     public String alipayCallback(HttpServletRequest request){
         String status=orderService.alipayCallback(request);
         return status;
