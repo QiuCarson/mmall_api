@@ -388,7 +388,7 @@ public class OrderServiceImpl implements OrderService {
             boolean flag = AlipaySignature.rsaCheckV1(params, Configs.getAlipayPublicKey(), "utf-8", "RSA2");
             if(flag){
                 if("TRADE_SUCCESS".equals(params.get("trade_status"))){
-                    log.error("支付宝异步回调成功 params={}",params.toString());
+                    log.info("支付宝异步回调成功 params={}",params.toString());
                     //付款金额
                     String amount = params.get("buyer_pay_amount");
                     //商户订单号
@@ -409,7 +409,6 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
         } catch (AlipayApiException e) {
-            // TODO Auto-generated catch block
             log.error("支付宝异步回调 验证回调异常 e={}",e.toString());
             return "fail";
         }
