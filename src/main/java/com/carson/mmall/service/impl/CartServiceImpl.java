@@ -175,7 +175,13 @@ public class CartServiceImpl implements CartService {
         List<Cart> cartList = cartRepository.findByUserId(userId);
         Integer count = 0;
         for (Cart cart : cartList) {
-            count += cart.getQuantity();
+            Product product=productRepository.findOne(cart.getProductId());
+            if(product==null){
+                cartRepository.delete(cart);
+            }else{
+                count += cart.getQuantity();
+            }
+
         }
         return count;
     }

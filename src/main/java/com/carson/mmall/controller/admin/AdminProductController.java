@@ -71,7 +71,7 @@ public class AdminProductController {
     }
 
 
-    @PostMapping("richtext_img_upload.do")
+    @PostMapping("/richtext_img_upload.do")
     public Map<String ,String> richtextImgUpload(@PathVariable("upload_file") MultipartFile upload_file){
         Map<String ,String> map=productService.richtextUpload(upload_file);
         return map;

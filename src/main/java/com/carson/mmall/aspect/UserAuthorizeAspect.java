@@ -22,7 +22,7 @@ public class UserAuthorizeAspect {
 
 
     @Pointcut("execution(public * com.carson.mmall.controller.Cart*.*(..)) && !execution(public * com.carson.mmall.controller.Cart*.count(..)) " +
-            "|| execution(public * com.carson.mmall.controller.Order*.*(..)) " +
+            "|| execution(public * com.carson.mmall.controller.Order*.*(..)) && !execution(public * com.carson.mmall.controller.Order*.alipayCallback(..))" +
             "|| execution(public * com.carson.mmall.controller.Shipping*.*(..)) " +
             "|| execution(public * com.carson.mmall.controller.User*.auth*(..))")
     public void verify() {

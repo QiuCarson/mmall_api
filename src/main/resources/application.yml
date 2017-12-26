@@ -5,3 +5,6 @@ custom:
   imageHost: http://img.happymmall.com/
   UserPasswordSalt: mmall
   imageSavePath: E:/20171218/
+  alipayQrPath: E:/20171218/
+  alipayNotifyUrl: http://www.baidu.com
+  alipaySubject: xxx品牌xxx门店当面付扫码消费

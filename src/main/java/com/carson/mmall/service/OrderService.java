@@ -4,6 +4,8 @@ import com.carson.mmall.VO.OrderCartProductVO;
 import com.carson.mmall.VO.OrderPageVO;
 import com.carson.mmall.dto.OrderDTO;
 
+import javax.servlet.http.HttpServletRequest;
+
 public interface OrderService {
     OrderDTO create(Integer userId, Integer shippingId);
 
@@ -26,4 +28,6 @@ public interface OrderService {
     OrderDTO adminDetail(Long orderNo);
 
     OrderDTO adminSendGoods(Long orderNo);
+
+    String alipayCallback(HttpServletRequest request);
 }

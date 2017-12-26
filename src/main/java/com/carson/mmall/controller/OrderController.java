@@ -1,5 +1,6 @@
 package com.carson.mmall.controller;
 
+import com.alipay.api.internal.util.AlipaySignature;
 import com.carson.mmall.VO.OrderCartProductVO;
 import com.carson.mmall.VO.OrderPageVO;
 import com.carson.mmall.VO.ResultVO;
@@ -9,13 +10,13 @@ import com.carson.mmall.service.OrderService;
 import com.carson.mmall.utils.ResultVOUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 @RestController
@@ -82,8 +83,9 @@ public class OrderController {
     }
 
     @GetMapping("/alipay_callback.do")
-    public ResultVO alipayCallback(){
-        //TODO支付回调处理
-        return null;
+    public String alipayCallback(HttpServletRequest request){
+        String status=orderService.alipayCallback(request);
+        return status;
     }
+
 }

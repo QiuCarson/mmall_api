@@ -36,6 +36,10 @@ public enum ResultEnum {
     CART_NOT_EXISTS(400, "没有要下单的商品"),
 
     ORDER_NOT_EXISTS(500, "订单不存在"),
+    ORDER_NOT_ITEM_EXISTS(501,"订单商品不存在"),
+    ORDER_ALIPAY_CREATE_ERROR(502,"支付宝预下单失败"),
+    ORDER_ALIPAY_UNKNOWN_ERROR(503,"系统异常，预下单状态未知"),
+    ORDER_ALIPAY_STATUS_ERROR(504,"不支持的交易状态，交易返回异常"),
 
     CATEGORY_NOT_EXISTS(600, "栏目不存在")
     ;

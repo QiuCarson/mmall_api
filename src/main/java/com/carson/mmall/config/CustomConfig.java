@@ -22,4 +22,19 @@ public class CustomConfig {
      * 图片保存路径
      */
     private String imageSavePath;
+
+    /**
+     * 支付宝二维码图片保存目录
+     */
+    private String alipayQrPath;
+
+    /**
+     * 支付宝异步回调地址
+     */
+    private String alipayNotifyUrl;
+
+    /**
+     * 支付宝标题
+     */
+    private String alipaySubject;
 }
